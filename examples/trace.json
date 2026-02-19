@@ -2,7 +2,26 @@
   "resourceSpans": [
     {
       "resource": {"attributes": [{"key": "service.name", "value": {"stringValue": "api"}}]},
-      "scopeSpans": []
+      "scopeSpans": [
+        {
+          "scope": {"name": "pinzit.example"},
+          "spans": [
+            {
+              "traceId": "00000000000000000000000000000001",
+              "spanId": "0000000000000001",
+              "name": "system.recovery",
+              "startTimeUnixNano": "1000000000",
+              "endTimeUnixNano": "2000000000",
+              "attributes": [
+                {
+                  "key": "recovery.complete",
+                  "value": {"boolValue": true}
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ]
 }
