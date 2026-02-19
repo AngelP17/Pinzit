@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  color: #f6f7f9;
+}
+
+[data-mode='audit'] {
+  --density-gap: 1rem;
+}
+
+[data-mode='explore'] {
+  --density-gap: 0.75rem;
+}
+
+[data-mode='focus'] {
+  --density-gap: 0.5rem;
+}
+
+.panel {
+  @apply rounded-xl border border-surface-600 bg-surface-800 shadow-panel;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

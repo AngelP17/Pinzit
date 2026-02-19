@@ -1,0 +1,4 @@
+metric,value
+resource_span_markers,1
+parsed_span_count,1
+overall_verdict,PASS

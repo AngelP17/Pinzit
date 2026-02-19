@@ -1,0 +1,48 @@
+{
+  "overall_verdict": "PASS",
+  "constraints": {
+    "brc_003": {
+      "verdict": "PASS",
+      "metrics": {
+        "max_propagation_hops": 2,
+        "max_hops_seen": 0,
+        "containment_timeout_ms": 2000,
+        "containment_latency_ms": 0,
+        "fault_root_count": 0,
+        "boundary_detected": false,
+        "isolation_boundary_attribute": "fault.isolation"
+      },
+      "evidence_spans": [],
+      "recommendations": ["Introduce bulkheads and fan-out limits."]
+    },
+    "rtcb_002": {
+      "verdict": "PASS",
+      "metrics": {
+        "max_recovery_ms": 30000,
+        "recovery_span_matches": 1,
+        "max_recovery_ms_seen": 1000,
+        "over_limit_count": 0,
+        "stability_check": true,
+        "stability_satisfied": true,
+        "recovery_span_name": "system.recovery",
+        "recovery_attribute": "recovery.complete"
+      },
+      "evidence_spans": ["system.recovery"],
+      "recommendations": ["Cap retry backoff and bound readiness checks."]
+    },
+    "slfs_001": {
+      "verdict": "PASS",
+      "metrics": {
+        "signal_loss_timeout_ms": 500,
+        "safe_state_deadline_ms": 250,
+        "signal_loss_events": 0,
+        "safe_state_hits": 0,
+        "unsafe_after_loss_count": 0,
+        "unsafe_action_pattern_count": 5,
+        "safe_state_pattern_count": 5
+      },
+      "evidence_spans": [],
+      "recommendations": ["Block unsafe operations when telemetry age exceeds threshold."]
+    }
+  }
+}

@@ -1,2 +1,4 @@
 /target
 /pinzit_out
+web/node_modules
+web/dist
