@@ -1,0 +1,8 @@
+[package]
+name = "pinzit"
+version = "0.1.0"
+edition = "2021"
+description = "Trace-native reliability intelligence CLI"
+license = "MIT"
+
+[dependencies]
