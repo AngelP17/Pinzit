@@ -18,7 +18,7 @@ export function TabBar() {
           key={tab.id}
           onClick={() => setActiveTab(tab.id)}
           className={cn(
-            'rounded-md px-4 py-2 text-sm transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500',
+            'cursor-pointer rounded-lg px-4 py-2 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-blue-500',
             activeTab === tab.id ? 'bg-surface-700 text-white' : 'text-zinc-300 hover:bg-surface-700/40'
           )}
         >

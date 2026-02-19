@@ -22,8 +22,8 @@ const differentiators = [
 
 export function WhyPinzitSection() {
   return (
-    <section className="mx-auto max-w-6xl px-6 py-16 md:px-12">
-      <div className="panel border-[#00f0ff]/20 bg-gradient-to-br from-[#00f0ff]/10 via-transparent to-[#39ff14]/10 p-6 md:p-8">
+    <section id="architecture" className="mx-auto max-w-6xl px-6 py-16 md:px-12">
+      <div className="glass-panel rounded-2xl bg-gradient-to-br from-[#00f0ff]/12 via-transparent to-[#39ff14]/10 p-6 md:p-8">
         <p className="text-xs uppercase tracking-[0.2em] text-[#00f0ff]">What Pinzit Is</p>
         <h3 className="mt-3 font-display text-3xl text-white md:text-4xl">
           Pinzit is a trace-native reliability verdict engine for modern delivery teams.
@@ -42,7 +42,7 @@ export function WhyPinzitSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.06 }}
-              className="rounded-lg border border-white/10 bg-black/30 p-4"
+              className="rounded-xl border border-white/12 bg-black/28 p-4"
             >
               <div className="flex items-start gap-2">
                 <CheckCircle2 size={16} className="mt-0.5 text-[#39ff14]" />
@@ -55,7 +55,7 @@ export function WhyPinzitSection() {
           ))}
         </div>
 
-        <div className="mt-8 rounded-lg border border-[#00f0ff]/25 bg-[#00f0ff]/10 p-4">
+        <div className="mt-8 rounded-xl border border-[#00f0ff]/25 bg-[#00f0ff]/10 p-4">
           <p className="text-sm text-zinc-100">
             Why this is the optimal solution: Pinzit balances strict reproducibility, zero-trust
             data handling, and high operator throughput in one workflow, without adding backend

@@ -21,7 +21,7 @@ export function FeaturesGrid() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: idx * 0.05 }}
-            className="panel border-white/10 bg-white/5 p-4"
+            className="glass-panel rounded-xl p-4"
           >
             <p className="text-sm text-zinc-200">{card}</p>
           </motion.div>

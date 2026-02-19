@@ -5,6 +5,12 @@ export default {
   theme: {
     extend: {
       colors: {
+        hero: {
+          sky: {
+            deep: '#071426',
+            mid: '#102a43',
+          },
+        },
         surface: {
           900: '#0a0a0b',
           800: '#141416',
@@ -20,6 +26,7 @@ export default {
       },
       fontFamily: {
         display: ['"DM Serif Display"', 'Georgia', 'serif'],
+        sans: ['"IBM Plex Sans"', '"Avenir Next"', 'sans-serif'],
       },
       keyframes: {
         pulseSoft: {
@@ -38,11 +45,16 @@ export default {
           '0%': { strokeDashoffset: '500' },
           '100%': { strokeDashoffset: '0' },
         },
+        heroFloat: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-8px)' },
+        },
       },
       animation: {
         pulseSoft: 'pulseSoft 1.8s ease-in-out infinite',
         marquee: 'marquee 20s linear infinite',
         fadeUp: 'fadeUp .7s ease forwards',
+        heroFloat: 'heroFloat 10s ease-in-out infinite',
       },
     },
   },

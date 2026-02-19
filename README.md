@@ -16,6 +16,9 @@
 > implemented. Built-in constraints now evaluate parsed spans and can return
 > `PASS` or `FAIL` based on trace content. See [Roadmap](#roadmap) for
 > remaining quality and coverage improvements.
+>
+> **Web UI included:** A client-only React control room now lives in
+> [`web/`](web), with a landing-first experience and interactive dashboard.
 
 ---
 
@@ -113,6 +116,37 @@ cargo run -- \
 ```bash
 cargo install --path .
 pinzit --trace ./examples/trace.json
+```
+
+### Launch Web UI
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+Then open the local URL printed by Vite (usually
+`http://127.0.0.1:5173/` or next available port).
+
+### Web Control Room + Landing v2
+
+The `web/` app is fully client-side (no backend) and now ships with:
+
+- Cinematic landing hero with layered atmosphere, floating nav, and motion choreography
+- Interactive control room dashboard (Overview, Findings, Evidence)
+- Compare-run modal for baseline vs current analysis
+- Strict file validation for `pinzit_verdict.json` + `pinzit_stats.csv`
+- Shared realistic mock-run generator powering landing live preview and sample loads
+- Local persistence (`pinzit-ui-v1`) for active run, tab, filters, and view state
+- Build guard that fails if the main bundle exceeds `220KB`
+
+Build verification:
+
+```bash
+cd web
+npm run typecheck
+npm run build:guard
 ```
 
 ---

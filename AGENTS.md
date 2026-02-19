@@ -27,6 +27,10 @@ exits with a code indicating pass, fail, or error.
 constraint evaluation, and output rendering — lives in `src/main.rs`. There are
 no modules, no workspace members, and no external crates.
 
+**Web UI surface**: A separate client-only frontend lives in `web/` (Vite +
+React + Tailwind). It provides a cinematic landing page and an interactive
+control room for `pinzit_verdict.json` + `pinzit_stats.csv` analysis.
+
 **Where to start for common tasks**:
 
 | Task                           | Where to look                           |
@@ -37,6 +41,9 @@ no modules, no workspace members, and no external crates.
 | Add a new constraint           | Section 12 of this file                  |
 | Add a test                     | `mod tests` block at bottom of `main.rs` |
 | Understand output format       | Section 8 of this file                  |
+| Modify landing/dashboard UI    | `web/src/components/landing/*`, `web/src/components/*` |
+| Demo/mock run generation       | `web/src/lib/demo-mock.ts`              |
+| Frontend store + persistence   | `web/src/store/run-store.ts`            |
 
 ---
 
@@ -76,6 +83,17 @@ approval — this is a core constraint of the project.
 | Output Formats        | HTML, JSON, CSV                         | Manually rendered via `format!()` |
 | `std` modules used    | `collections`, `env`, `fs`, `path`      | No other `std` modules needed  |
 
+### Frontend Stack (`web/`)
+
+| Component              | Technology                               | Notes |
+|------------------------|------------------------------------------|-------|
+| Build tool             | Vite                                     | Main chunk guard enforced (`<=220KB`) |
+| UI framework           | React 18 + TypeScript                    | Client-only, no backend |
+| Styling                | Tailwind CSS + custom CSS tokens         | Shared panel language across landing/dashboard |
+| Motion                 | Framer Motion + CSS keyframes            | Reduced-motion safe |
+| 3D atmosphere          | Three.js via React Three Fiber           | Split chunk (`three-r3f`), graceful context-loss fallback |
+| State                  | Zustand                                  | Persisted key: `pinzit-ui-v1` |
+
 ---
 
 ## 3. Project Structure
@@ -86,6 +104,13 @@ approval — this is a core constraint of the project.
 ├── Cargo.lock              # Dependency lockfile (no external crates)
 ├── src/
 │   └── main.rs             # Entire application — 413 lines, single file
+├── web/
+│   ├── src/
+│   │   ├── Root.tsx        # Landing/dashboard view switcher
+│   │   ├── App.tsx         # Control room dashboard shell
+│   │   ├── components/     # Landing + dashboard UI components
+│   │   └── lib/demo-mock.ts# Shared realistic mock-run generator
+│   └── vite.config.ts      # Chunk splitting + bundle guard plugin
 ├── examples/
 │   ├── trace.json          # Minimal OpenTelemetry trace (1 resourceSpan)
 │   └── pinzit.toml         # Complete config with all constraint sections
@@ -177,6 +202,15 @@ cargo run -- \
 
 # Install the binary locally
 cargo install --path .
+
+# Frontend: run local UI
+cd web
+npm install
+npm run dev
+
+# Frontend: enforce type + bundle guard
+npm run typecheck
+npm run build:guard
 ```
 
 > **Expected test output**: 4+ passed, 0 failed, 0 ignored.

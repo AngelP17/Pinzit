@@ -25,7 +25,10 @@ export function DropzonePanel() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const validateAndLoad = async (nextVerdict: LoadedFile, nextCsv: LoadedFile) => {
-    if (!nextVerdict || !nextCsv) return;
+    if (!nextVerdict || !nextCsv) {
+      addToast('Both files are required: pinzit_verdict.json and pinzit_stats.csv', 'info', 2800);
+      return;
+    }
 
     try {
       const { parseCsv, parseVerdict } = await import('../../lib/parsers');
@@ -111,7 +114,7 @@ export function DropzonePanel() {
             addToast('Failed to process dropped files', 'error');
           });
         }}
-        className={`group w-full rounded-xl border-2 border-dashed p-6 text-center transition-all focus-visible:ring-2 focus-visible:ring-blue-500 ${
+        className={`group w-full rounded-2xl border-2 border-dashed p-6 text-center transition-all focus-visible:ring-2 focus-visible:ring-blue-500 ${
           isOver
             ? 'border-pass bg-gradient-to-r from-pass/15 via-pass/5 to-transparent'
             : 'border-surface-600 hover:border-pass/60 hover:bg-gradient-to-r hover:from-pass/10 hover:to-transparent'
@@ -151,7 +154,7 @@ export function DropzonePanel() {
               addToast(e instanceof Error ? e.message : 'Failed to load PASS sample', 'error');
             }
           }}
-          className="rounded-md border border-surface-600 px-3 py-1.5 text-sm hover:border-pass focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="rounded-lg border border-surface-600 px-3 py-1.5 text-sm hover:border-pass focus-visible:ring-2 focus-visible:ring-blue-500"
         >
           Load sample PASS
         </button>
@@ -165,7 +168,7 @@ export function DropzonePanel() {
               addToast(e instanceof Error ? e.message : 'Failed to load FAIL sample', 'error');
             }
           }}
-          className="rounded-md border border-surface-600 px-3 py-1.5 text-sm hover:border-fail focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="rounded-lg border border-surface-600 px-3 py-1.5 text-sm hover:border-fail focus-visible:ring-2 focus-visible:ring-blue-500"
         >
           Load sample FAIL
         </button>

@@ -1,7 +1,7 @@
 export function SealedSection() {
   return (
     <section className="mx-auto max-w-6xl px-6 py-16 md:px-12">
-      <div className="panel border-[#00f0ff]/20 bg-gradient-to-r from-[#00f0ff]/10 via-[#00f0ff]/5 to-transparent p-6">
+      <div className="glass-panel rounded-2xl bg-gradient-to-r from-[#00f0ff]/10 via-[#00f0ff]/5 to-transparent p-6">
         <p className="text-xs uppercase tracking-[0.2em] text-[#00f0ff]">Cryptographic Traceability</p>
         <h3 className="mt-3 font-display text-2xl text-white">Sealed evidence chain</h3>
         <p className="mt-2 text-sm text-zinc-300">
@@ -24,6 +24,8 @@ export function SealedSection() {
           </defs>
 
           <g strokeLinecap="round">
+            <path id="flow-main" d="M90 110 L220 70 L350 110 L480 110 L610 110" fill="none" />
+            <path id="flow-branch" d="M220 150 L350 110" fill="none" />
             <line x1="90" y1="110" x2="220" y2="70" stroke="rgba(255,255,255,0.12)" strokeWidth="5" />
             <line x1="220" y1="70" x2="350" y2="110" stroke="rgba(255,255,255,0.12)" strokeWidth="5" />
             <line x1="220" y1="150" x2="350" y2="110" stroke="rgba(255,255,255,0.12)" strokeWidth="5" />
@@ -49,6 +51,16 @@ export function SealedSection() {
           <circle cx="610" cy="110" r="16" fill="#00f0ff" />
 
           <circle cx="350" cy="110" r="5" fill="#39ff14" />
+          <circle r="4" fill="#ffffff" opacity="0.95">
+            <animateMotion dur="2.6s" repeatCount="indefinite" rotate="auto">
+              <mpath href="#flow-main" />
+            </animateMotion>
+          </circle>
+          <circle r="3.5" fill="#39ff14" opacity="0.9">
+            <animateMotion dur="1.7s" repeatCount="indefinite" rotate="auto">
+              <mpath href="#flow-branch" />
+            </animateMotion>
+          </circle>
 
           <text x="74" y="140" fill="#9ca3af" fontSize="12">Input</text>
           <text x="198" y="50" fill="#9ca3af" fontSize="12">Merkle A</text>

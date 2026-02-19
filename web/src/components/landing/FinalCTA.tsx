@@ -2,8 +2,8 @@ import { ArrowRight, Github } from 'lucide-react';
 
 export function FinalCTA({ onLaunch }: { onLaunch: () => void }) {
   return (
-    <section className="mx-auto max-w-6xl px-6 pb-24 pt-10 md:px-12">
-      <div className="panel border-[#00f0ff]/30 bg-gradient-to-r from-[#00f0ff]/10 via-transparent to-[#39ff14]/10 p-8 text-center">
+    <section id="pricing" className="mx-auto max-w-6xl px-6 pb-24 pt-10 md:px-12">
+      <div className="glass-panel rounded-2xl bg-gradient-to-r from-[#00f0ff]/11 via-transparent to-[#39ff14]/12 p-8 text-center">
         <h3 className="font-display text-3xl text-white">Ready to audit reliability in seconds?</h3>
         <p className="mt-2 text-zinc-300">Launch the control room with sample data, then bring your own Pinzit artifacts.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
