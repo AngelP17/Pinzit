@@ -4,6 +4,14 @@ import type { ConstraintId, RunBundle, VerdictState } from '../types/pinzit';
 
 type ViewMode = 'audit' | 'explore' | 'focus';
 type ActiveTab = 'overview' | 'findings' | 'evidence';
+type ToastTone = 'success' | 'error' | 'info';
+
+type Toast = {
+  id: string;
+  message: string;
+  tone: ToastTone;
+  durationMs?: number;
+};
 
 type State = {
   primaryRun: RunBundle | null;
@@ -15,6 +23,7 @@ type State = {
   paletteOpen: boolean;
   compareModalOpen: boolean;
   verdictFilter: VerdictState[];
+  toasts: Toast[];
   setPrimaryRun: (run: RunBundle | null) => void;
   setComparisonRun: (run: RunBundle | null) => void;
   setActiveTab: (tab: ActiveTab) => void;
@@ -24,6 +33,8 @@ type State = {
   setPaletteOpen: (open: boolean) => void;
   setCompareModalOpen: (open: boolean) => void;
   setVerdictFilter: (values: VerdictState[]) => void;
+  addToast: (message: string, tone: ToastTone, durationMs?: number) => void;
+  removeToast: (id: string) => void;
 };
 
 export const useRunStore = create<State>()(
@@ -38,6 +49,7 @@ export const useRunStore = create<State>()(
       paletteOpen: false,
       compareModalOpen: false,
       verdictFilter: ['PASS', 'FAIL', 'SKIPPED'],
+      toasts: [],
       setPrimaryRun: (run) => set({ primaryRun: run }),
       setComparisonRun: (run) => set({ comparisonRun: run }),
       setActiveTab: (tab) => set({ activeTab: tab }),
@@ -48,6 +60,22 @@ export const useRunStore = create<State>()(
       setPaletteOpen: (open) => set({ paletteOpen: open }),
       setCompareModalOpen: (open) => set({ compareModalOpen: open }),
       setVerdictFilter: (values) => set({ verdictFilter: values }),
+      addToast: (message, tone, durationMs) =>
+        set((state) => ({
+          toasts: [
+            ...state.toasts,
+            {
+              id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+              message,
+              tone,
+              durationMs,
+            },
+          ],
+        })),
+      removeToast: (id) =>
+        set((state) => ({
+          toasts: state.toasts.filter((toast) => toast.id !== id),
+        })),
     }),
     {
       name: 'pinzit-ui-v1',

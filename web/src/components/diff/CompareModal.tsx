@@ -43,6 +43,7 @@ export function CompareModal() {
   const setOpen = useRunStore((s) => s.setCompareModalOpen);
   const setComparisonRun = useRunStore((s) => s.setComparisonRun);
   const setPrimaryRun = useRunStore((s) => s.setPrimaryRun);
+  const addToast = useRunStore((s) => s.addToast);
 
   const [baselineFiles, setBaselineFiles] = useState<BundleFiles>({ verdict: null, csv: null });
   const [currentFiles, setCurrentFiles] = useState<BundleFiles>({ verdict: null, csv: null });
@@ -53,7 +54,9 @@ export function CompareModal() {
   const runComparison = async () => {
     setError(null);
     if (!baselineFiles.verdict || !baselineFiles.csv || !currentFiles.verdict || !currentFiles.csv) {
-      setError('Select verdict + stats files for both baseline and current runs.');
+      const message = 'Select verdict + stats files for both baseline and current runs.';
+      setError(message);
+      addToast(message, 'error', 3500);
       return;
     }
 
@@ -82,8 +85,11 @@ export function CompareModal() {
       });
 
       setOpen(false);
+      addToast('Comparison loaded', 'success');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to compare selected files');
+      const message = e instanceof Error ? e.message : 'Failed to compare selected files';
+      setError(message);
+      addToast(message, 'error', 3800);
     }
   };
 
