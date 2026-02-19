@@ -1,0 +1,21 @@
+[meta]
+audit_name = "Production Trace"
+auditor = "Pinzit v0.1.0"
+standard = "IEC-61508"
+
+[constraints.slfs_001]
+signal_loss_timeout_ms = 500
+safe_state_deadline_ms = 250
+unsafe_action_patterns = ["motion", "punch", "actuate", "write", "commit"]
+safe_state_patterns = ["halt", "brake", "safe", "readonly", "degraded"]
+
+[constraints.rtcb_002]
+max_recovery_ms = 30000
+recovery_span_name = "system.recovery"
+recovery_attribute = "recovery.complete"
+stability_check = true
+
+[constraints.brc_003]
+max_propagation_hops = 2
+containment_timeout_ms = 2000
+isolation_boundary_attribute = "fault.isolation"
