@@ -16,9 +16,17 @@ export function FindingsFilters() {
   };
 
   return (
-    <div className="mb-3 flex gap-2">
+    <div className="mb-3 flex flex-wrap gap-2">
       {values.map((value) => (
-        <button key={value} onClick={() => toggle(value)} className={`rounded-md border px-3 py-1 text-sm ${filter.includes(value) ? 'border-pass text-pass' : 'border-surface-600 text-zinc-300'}`}>
+        <button
+          key={value}
+          onClick={() => toggle(value)}
+          className={`rounded-md border px-3 py-1 text-sm focus-visible:ring-2 focus-visible:ring-blue-500 ${
+            filter.includes(value)
+              ? 'border-pass bg-pass/10 text-pass'
+              : 'border-surface-600 text-zinc-300 hover:border-surface-500'
+          }`}
+        >
           {value}
         </button>
       ))}

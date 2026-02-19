@@ -20,8 +20,16 @@ export function FindingsTab({ run }: { run: RunBundle | null }) {
   const rows = inferSeverity(run.verdict).filter((row) => verdictFilter.includes(row.verdict));
 
   return (
-    <div>
-      <FindingsFilters />
+    <div className="space-y-[var(--density-gap)]">
+      <div className="tab-header">
+        <div>
+          <h2 className="tab-title">Findings</h2>
+          <p className="tab-subtitle">Constraint-level issues prioritized by severity and evidence density.</p>
+        </div>
+      </div>
+      <div className="panel p-3">
+        <FindingsFilters />
+      </div>
       <Suspense fallback={<div className="panel p-4 text-sm text-zinc-400">Loading table...</div>}>
         <FindingsTable rows={rows} onOpen={openEvidence} />
       </Suspense>

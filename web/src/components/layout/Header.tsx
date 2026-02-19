@@ -1,4 +1,5 @@
 import {
+  ArrowLeft,
   Compass,
   Download,
   GitCompare,
@@ -9,7 +10,7 @@ import {
 import { useRunStore } from '../../store/run-store';
 import { exportCSV, exportJSON } from '../../lib/export';
 
-export function Header() {
+export function Header({ onBack }: { onBack?: () => void }) {
   const run = useRunStore((s) => s.primaryRun);
   const setPaletteOpen = useRunStore((s) => s.setPaletteOpen);
   const setCompareModalOpen = useRunStore((s) => s.setCompareModalOpen);
@@ -18,6 +19,15 @@ export function Header() {
   return (
     <header className="panel mb-4 flex flex-wrap items-center justify-between gap-3 p-4">
       <div>
+        {onBack ? (
+          <button
+            aria-label="Back to landing page"
+            onClick={onBack}
+            className="mb-2 inline-flex items-center gap-1 rounded-md border border-surface-600 px-2 py-1 text-xs text-zinc-300 hover:border-surface-500 focus-visible:ring-2 focus-visible:ring-blue-500"
+          >
+            <ArrowLeft size={12} /> Back
+          </button>
+        ) : null}
         <h1 className="text-2xl font-bold tracking-tight">Pinzit Control Room</h1>
         <p className="text-sm text-zinc-400">Client-only reliability audit dashboard</p>
       </div>

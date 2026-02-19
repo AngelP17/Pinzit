@@ -25,4 +25,14 @@ function enforceMainChunkLimit(maxKb = 220): Plugin {
 export default defineConfig({
   plugins: [react(), enforceMainChunkLimit(220)],
   base: './',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'three-r3f': ['three', '@react-three/fiber', '@react-three/drei'],
+          landing: ['framer-motion', 'lenis'],
+        },
+      },
+    },
+  },
 });

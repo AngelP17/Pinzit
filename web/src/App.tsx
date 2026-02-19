@@ -7,7 +7,6 @@ import { EvidenceDrawer } from './components/evidence/EvidenceDrawer';
 import { DiffMode } from './components/diff/DiffMode';
 import { useRunStore } from './store/run-store';
 import { useKeyboard } from './hooks/useKeyboard';
-import { ToastViewport } from './components/shared/ToastViewport';
 
 const OverviewTab = lazy(() =>
   import('./components/overview/OverviewTab').then((m) => ({ default: m.OverviewTab }))
@@ -25,7 +24,7 @@ const CommandPalette = lazy(() =>
   import('./components/command-palette/CommandPalette').then((m) => ({ default: m.CommandPalette }))
 );
 
-function App() {
+function App({ onBack }: { onBack?: () => void }) {
   useKeyboard();
 
   const run = useRunStore((s) => s.primaryRun);
@@ -35,7 +34,7 @@ function App() {
 
   return (
     <Shell mode={mode}>
-      <Header />
+      <Header onBack={onBack} />
       <DropzonePanel />
       <DiffMode base={run} next={comparisonRun} />
       <TabBar />
@@ -51,7 +50,6 @@ function App() {
         <CompareModal />
         <CommandPalette />
       </Suspense>
-      <ToastViewport />
     </Shell>
   );
 }

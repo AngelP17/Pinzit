@@ -23,6 +23,12 @@ export function OverviewTab({ run }: { run: RunBundle | null }) {
 
   return (
     <div className="space-y-[var(--density-gap)]">
+      <div className="tab-header">
+        <div>
+          <h2 className="tab-title">Overview</h2>
+          <p className="tab-subtitle">Reliability posture, core metrics, and top constraint outcomes.</p>
+        </div>
+      </div>
       <VerdictBanner verdict={run.verdict.overall_verdict} />
       <StatsBar rows={run.csvRows} />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">

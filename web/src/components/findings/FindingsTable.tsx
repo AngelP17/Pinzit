@@ -19,14 +19,14 @@ export function FindingsTable({ rows, onOpen }: { rows: FindingRow[]; onOpen: (i
           {table.getHeaderGroups().map((hg) => (
             <tr key={hg.id}>
               {hg.headers.map((h) => (
-                <th key={h.id} className="px-3 py-2 font-medium text-zinc-300">{flexRender(h.column.columnDef.header, h.getContext())}</th>
+                <th key={h.id} className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">{flexRender(h.column.columnDef.header, h.getContext())}</th>
               ))}
             </tr>
           ))}
         </thead>
         <tbody>
           {table.getRowModel().rows.map((row) => (
-            <tr key={row.id} className="cursor-pointer border-t border-surface-600 hover:bg-surface-700/40" onClick={() => onOpen(row.original.id)}>
+            <tr key={row.id} className="cursor-pointer border-t border-surface-600 text-zinc-200 transition-colors hover:bg-surface-700/40" onClick={() => onOpen(row.original.id)}>
               {row.getVisibleCells().map((cell) => (
                 <td key={cell.id} className="px-3 py-2">{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
               ))}

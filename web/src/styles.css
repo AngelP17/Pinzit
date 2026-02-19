@@ -28,6 +28,18 @@ body {
   @apply rounded-xl border border-surface-600 bg-surface-800 shadow-panel;
 }
 
+.tab-header {
+  @apply mb-4 flex items-end justify-between;
+}
+
+.tab-title {
+  @apply text-lg font-semibold text-white;
+}
+
+.tab-subtitle {
+  @apply mt-1 text-sm text-zinc-400;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;
