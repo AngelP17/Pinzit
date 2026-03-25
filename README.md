@@ -141,7 +141,7 @@ The `web/` app is fully client-side (no backend) and now ships with:
 - Local persistence (`pinzit-ui-v1`) for active run, tab, filters, and view state
 - Build guard that fails if the main bundle exceeds `220KB`
 
-![Landing Page](web/.snapshots/01-landing-page.png)
+![Landing Hero](web/.snapshots/01-landing-hero.png)
 
 ![Control Room](web/.snapshots/02-control-room.png)
 
