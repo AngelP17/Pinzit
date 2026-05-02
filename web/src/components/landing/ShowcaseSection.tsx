@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from '@phosphor-icons/react';
 import { ConsolePreview } from './ConsolePreview';
 
 export function ShowcaseSection({ onLaunch }: { onLaunch: () => void }) {
@@ -13,7 +13,7 @@ export function ShowcaseSection({ onLaunch }: { onLaunch: () => void }) {
           onClick={onLaunch}
           className="mt-6 inline-flex items-center gap-2 rounded-md border border-[#00f0ff]/40 bg-[#00f0ff]/12 px-4 py-2 text-sm text-[#9dedff] transition hover:bg-[#00f0ff]/18 focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          Open Dashboard <ArrowRight size={14} />
+          Open Dashboard <ArrowRight size={14} weight="duotone" />
         </button>
       </div>
       <motion.div

@@ -25,8 +25,8 @@ export default {
         panel: '0 10px 30px rgba(0,0,0,0.35)',
       },
       fontFamily: {
-        display: ['"DM Serif Display"', 'Georgia', 'serif'],
-        sans: ['"IBM Plex Sans"', '"Avenir Next"', 'sans-serif'],
+        display: ['"Geist"', '"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+        sans: ['"Geist"', '"IBM Plex Sans"', '"Avenir Next"', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         pulseSoft: {

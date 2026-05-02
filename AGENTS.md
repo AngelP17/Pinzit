@@ -20,8 +20,9 @@ exits with a code indicating pass, fail, or error.
 
 > **Functional evaluation phase.** The CLI, config parser, output writers, and
 > std-only trace parsing are functional. All three built-in constraints now
-> compute verdicts from trace content and config thresholds. See Section 14 for
-> current limitations.
+> compute verdicts from trace content and config thresholds. The web UI now
+> includes Timeline and CI Gate tabs, artifact states, auto-loaded sample data,
+> and Phosphor icons. See Section 14 for current limitations.
 
 **Single file**: All logic — argument parsing, config loading, trace parsing,
 constraint evaluation, and output rendering — lives in `src/main.rs`. There are
@@ -44,6 +45,7 @@ control room for `pinzit_verdict.json` + `pinzit_stats.csv` analysis.
 | Modify landing/dashboard UI    | `web/src/components/landing/*`, `web/src/components/*` |
 | Demo/mock run generation       | `web/src/lib/demo-mock.ts`              |
 | Frontend store + persistence   | `web/src/store/run-store.ts`            |
+| QA gate / icon policy          | `docs/product/QA_GPT_TASTE_GATE.md`     |
 
 ---
 
@@ -91,8 +93,10 @@ approval — this is a core constraint of the project.
 | UI framework           | React 18 + TypeScript                    | Client-only, no backend |
 | Styling                | Tailwind CSS + custom CSS tokens         | Shared panel language across landing/dashboard |
 | Motion                 | Framer Motion + CSS keyframes            | Reduced-motion safe |
-| 3D atmosphere          | Three.js via React Three Fiber           | Split chunk (`three-r3f`), graceful context-loss fallback |
+| 3D atmosphere          | Three.js via React Three Fiber           | Split chunk (`three-r3f`), graceful context-loss fallback, WebGL detection |
 | State                  | Zustand                                  | Persisted key: `pinzit-ui-v1` |
+| Icons                  | `@phosphor-icons/react`                  | `weight="duotone"` or `weight="bold"` standard |
+| Fonts                  | Geist (preferred), IBM Plex Sans, system-ui | No Inter, no serif in dashboard |
 
 ---
 
@@ -103,17 +107,23 @@ approval — this is a core constraint of the project.
 ├── Cargo.toml              # Package manifest (name: pinzit, v0.1.0)
 ├── Cargo.lock              # Dependency lockfile (no external crates)
 ├── src/
-│   └── main.rs             # Entire application — 413 lines, single file
+│   └── main.rs             # Entire application — single file
 ├── web/
 │   ├── src/
 │   │   ├── Root.tsx        # Landing/dashboard view switcher
 │   │   ├── App.tsx         # Control room dashboard shell
 │   │   ├── components/     # Landing + dashboard UI components
+│   │   │   ├── ci-gate/    # CI Gate tab
+│   │   │   ├── timeline/   # Timeline tab + trace-native views
+│   │   │   └── shared/     # ArtifactStates, EmptyState, etc.
 │   │   └── lib/demo-mock.ts# Shared realistic mock-run generator
 │   └── vite.config.ts      # Chunk splitting + bundle guard plugin
 ├── examples/
 │   ├── trace.json          # Minimal OpenTelemetry trace (1 resourceSpan)
 │   └── pinzit.toml         # Complete config with all constraint sections
+├── docs/
+│   └── product/
+│       └── QA_GPT_TASTE_GATE.md
 ├── .gitignore              # Ignores /target and /pinzit_out
 ├── README.md               # User-facing documentation and positioning
 └── AGENTS.md               # This file
@@ -125,11 +135,10 @@ approval — this is a core constraint of the project.
   intentional; the project is designed to be minimal and focused.
 - **Zero external dependencies** — Only `std` is used (`std::collections`,
   `std::env`, `std::fs`, `std::path`).
-- **Hand-rolled parsers** — CLI args (lines 52–115), TOML config (lines
-  236–306), and JSON output rendering (lines 308–344, 347–391) are all
-  manually implemented without crates.
-- **Two data structs** — `Cli` (lines 6–14) holds parsed CLI arguments;
-  `Config` (lines 16–32) holds all config values.
+- **Hand-rolled parsers** — CLI args, TOML config, and JSON output rendering
+  are all manually implemented without crates.
+- **Two data structs** — `Cli` holds parsed CLI arguments;
+  `Config` holds all config values.
 
 ### Data Flow
 
@@ -140,29 +149,29 @@ flowchart LR
     C --> D["Evaluate Constraints"]
     D --> E["pinzit_verdict.json"]
     D --> F["pinzit_stats.csv"]
-    D --> G["pinzit_report.html"]
+    D --> G["pinzit_constraints.csv"]
+    D --> H["pinzit_report.html"]
 ```
 
 ### Key Functions (by line range in `main.rs`)
 
-| Function                          | Lines     | Purpose                                                           |
-|-----------------------------------|-----------|-------------------------------------------------------------------|
-| `main()`                          | 34–50     | Entry point, delegates to `parse_args` and `run`                  |
-| `parse_args()`                    | 52–115    | Manual CLI argument parsing                                       |
-| `run()`                           | 117–226   | Core logic: load config, validate trace, evaluate constraints, write outputs |
-| `validate_json_shape()`           | 228–234   | Checks trace starts/ends with `{` / `}`                           |
-| `parse_config()`                  | 236–264   | Hand-rolled TOML key-value parser                                 |
-| `get_raw/string/u64/bool/array()` | 266–306   | Config value accessor helpers                                     |
-| `quote_json()`                    | 308–310   | JSON string escaping utility                                      |
-| `render_constraint_json()`        | 312–345   | Builds per-constraint JSON fragment                               |
-| `write_json()`                    | 347–364   | Writes `pinzit_verdict.json`                                      |
-| `write_csv()`                     | 366–370   | Writes `pinzit_stats.csv`                                         |
-| `write_html()`                    | 372–391   | Writes `pinzit_report.html`                                       |
-| `tests` module                    | bottom of file | Unit tests (currently 4 tests)                                |
+| Function                          | Purpose                                                           |
+|-----------------------------------|-------------------------------------------------------------------|
+| `main()`                          | Entry point, delegates to `parse_args` and `run`                  |
+| `parse_args()`                    | Manual CLI argument parsing                                       |
+| `run()`                           | Core logic: load config, validate trace, evaluate constraints, write outputs |
+| `validate_json_shape()`           | Checks trace starts/ends with `{` / `}`                           |
+| `parse_config()`                  | Hand-rolled TOML key-value parser                                 |
+| `get_raw/string/u64/bool/array()` | Config value accessor helpers                                     |
+| `quote_json()`                    | JSON string escaping utility                                      |
+| `render_constraint_json()`        | Builds per-constraint JSON fragment                               |
+| `write_json()`                    | Writes `pinzit_verdict.json` with metadata, summary, timeline, graph |
+| `write_csv()`                     | Writes `pinzit_stats.csv`                                         |
+| `write_constraints_csv()`         | Writes `pinzit_constraints.csv`                                   |
+| `write_html()`                    | Writes `pinzit_report.html` with executive summary and timeline   |
+| `tests` module                    | Unit tests (14 tests)                                             |
 
-> **Line numbers are approximate.** They are accurate for the commit described
-> in this document but may shift as the file grows. Use `grep` or your editor's
-> search to locate functions by name.
+> Use `grep` or your editor's search to locate functions by name.
 
 ---
 
@@ -213,7 +222,7 @@ npm run typecheck
 npm run build:guard
 ```
 
-> **Expected test output**: 4+ passed, 0 failed, 0 ignored.
+> **Expected test output**: 14+ passed, 0 failed, 0 ignored.
 >
 > `cargo clippy` should report no warnings. `cargo fmt --check` should exit
 > cleanly. If either fails, fix the issue before submitting changes.
@@ -284,7 +293,7 @@ isolation_boundary_attribute = "fault.isolation"
 
 ### Parser Behavior
 
-The parser (`parse_config`, line 236) is a simplified TOML reader:
+The parser (`parse_config`) is a simplified TOML reader:
 
 - **Ignores**: blank lines, lines starting with `#` (comments), lines starting
   with `[` (section headers).
@@ -358,20 +367,36 @@ Constraint verdicts are evaluated from parsed span data and config thresholds.
 
 | File                   | Format | Description                                          |
 |------------------------|--------|------------------------------------------------------|
-| `pinzit_verdict.json`  | JSON   | Machine-readable verdict for CI/automation           |
+| `pinzit_verdict.json`  | JSON   | Machine-readable verdict with metadata, summary, timeline, graph |
 | `pinzit_stats.csv`     | CSV    | Flat metrics (`resource_span_markers`, `parsed_span_count`, `overall_verdict`) |
-| `pinzit_report.html`   | HTML   | Self-contained audit report with per-constraint summary table |
+| `pinzit_constraints.csv` | CSV  | One row per constraint with threshold, observed, evidence count |
+| `pinzit_report.html`   | HTML   | Self-contained audit report with executive summary and timeline |
 
 ### JSON Verdict Structure
 
 ```json
 {
-  "overall_verdict": "PASS",
+  "metadata": {
+    "run_id": "pinzit_1714651200_123456789",
+    "generated_at": "1714651200",
+    "trace_file": "./examples/trace.json",
+    "config_file": "./examples/pinzit.toml",
+    "pinzit_version": "0.1.0"
+  },
+  "summary": {
+    "overall_verdict": "PASS",
+    "parsed_span_count": 182,
+    "failed_constraint_count": 0,
+    "critical_path_ms": 4312,
+    "max_propagation_hops_seen": 2
+  },
   "constraints": {
     "brc_003": { "verdict": "PASS", "metrics": {...}, "evidence_spans": [...], "recommendations": [...] },
     "rtcb_002": { "verdict": "PASS", "metrics": {...}, "evidence_spans": [...], "recommendations": [...] },
     "slfs_001": { "verdict": "PASS", "metrics": {...}, "evidence_spans": [...], "recommendations": [...] }
-  }
+  },
+  "timeline": [...],
+  "graph": { "nodes": [...], "edges": [...] }
 }
 ```
 
@@ -393,11 +418,17 @@ overall_verdict,<PASS|FAIL>
 `resource_span_markers` is the number of times the string `"resourceSpans"`
 appears in the raw trace file (string matching, not parsed JSON).
 
+`pinzit_constraints.csv` writes one row per constraint:
+
+```csv
+constraint_id,verdict,metric,threshold,observed,evidence_count,recommendation_count
+```
+
 ### HTML Format
 
 The HTML report is self-contained — no external CSS or JavaScript dependencies.
-It lists audit metadata, overall verdict, parsed span metrics, and a
-per-constraint summary table.
+It lists audit metadata, executive summary, parsed span metrics, per-constraint
+detail table, incident timeline, graph summary, and CI gate block.
 
 ---
 
@@ -414,6 +445,16 @@ Current tests:
 | `validates_json_shape`  | `validate_json_shape()` accepts `{...}`, rejects non-object |
 | `parses_full_config`    | `parse_config()` loads all required keys                    |
 | `run_returns_fail_exit_code_on_constraint_failure` | `run()` returns `1` on a violating trace |
+| `parse_args_requires_trace` | `parse_args()` errors when `--trace` is missing          |
+| `parse_args_parses_all_flags` | `parse_args()` parses all CLI flags correctly            |
+| `invalid_config_missing_key` | `parse_config()` errors on missing required keys          |
+| `invalid_json_shape_rejects_array` | `validate_json_shape()` rejects arrays and plain text  |
+| `slfs_boundary_no_unsafe_actions_passes` | SLFS passes when no unsafe actions follow signal loss |
+| `rtcb_boundary_within_limit_passes` | RTCB passes when recovery is within threshold             |
+| `rtcb_boundary_over_limit_fails` | RTCB fails when recovery exceeds threshold                 |
+| `brc_propagation_within_hops_passes` | BRC passes when hops are within limit                     |
+| `brc_propagation_exceeds_hops_fails` | BRC fails when hops exceed limit                          |
+| `writers_produce_files` | `write_json`, `write_csv`, `write_constraints_csv`, `write_html` all produce files |
 
 ### Running Tests
 
@@ -436,15 +477,10 @@ fn my_new_test() {
 
 ### Areas Without Tests (Priority Order)
 
-The following areas have no test coverage. Work on them in priority order:
-
 | Priority | Area                            | Why it matters                                    |
 |----------|---------------------------------|---------------------------------------------------|
-| P0       | Error paths                     | Missing config keys, invalid integers, bad JSON   |
-| P1       | `parse_args()`                  | CLI parsing correctness                           |
-| P1       | Constraint edge cases           | Boundary timestamps, missing attributes, hop logic |
-| P2       | Output writers                  | `write_json`, `write_csv`, `write_html`           |
-| P2       | End-to-end pipeline             | Trace in → output files out                       |
+| P1       | End-to-end pipeline             | Trace in → output files out                       |
+| P2       | Frontend rendering              | Component states, tab switching, artifact states  |
 
 ---
 
@@ -488,7 +524,7 @@ The following areas have no test coverage. Work on them in priority order:
 - The codebase uses owned `String` types extensively (not `&str`).
 - JSON output is built via manual `format!()` string concatenation — no
   serialization crate.
-- JSON strings are escaped via `quote_json()` (line 308).
+- JSON strings are escaped via `quote_json()`.
 - Constraint ordering in JSON output uses `BTreeMap` for deterministic key order.
 
 ### Formatting and Lint
@@ -529,7 +565,7 @@ The following areas have no test coverage. Work on them in priority order:
 
 To add a new constraint (e.g., `xyz_004`):
 
-1. **Add config fields** to the `Config` struct (line 16):
+1. **Add config fields** to the `Config` struct:
 
    ```rust
    // XYZ-004 fields
@@ -537,8 +573,7 @@ To add a new constraint (e.g., `xyz_004`):
    xyz_some_pattern: String,
    ```
 
-2. **Parse the new fields** in `parse_config()` using the `get_*` helpers
-   (line 236):
+2. **Parse the new fields** in `parse_config()` using the `get_*` helpers:
 
    ```rust
    xyz_some_threshold_ms: get_u64(&raw, "some_threshold_ms")?,
@@ -612,9 +647,8 @@ These are factual observations from the current source code, in priority order:
 |----------|------------------------------------|----------------------------------------------------------------------------------------------------------|
 | P0       | **Heuristic JSON parsing**         | Trace is not fully schema-validated; parser uses targeted key/array/object extraction from raw JSON.    |
 | P1       | **Constraint heuristics**          | SLFS/RTCB/BRC rely on naming/attribute conventions and may need tightening for varied trace producers.  |
-| P2       | **HTML detail depth**              | Report includes summary table, but no causal timeline or per-span evidence detail pages yet.            |
-| P2       | **CSV breadth**                    | CSV contains global metrics but not per-constraint threshold/observed rows yet.                         |
-| P2       | **Test coverage still limited**    | Key paths are covered, but parse-args/output-writer/end-to-end matrix remains incomplete.               |
+| P2       | **Rust modularization**            | `src/main.rs` is intentionally single-file today; future modularization should preserve zero dependencies. |
+| P2       | **Frontend state coverage**        | All key states are implemented, but visual regression tests are not yet automated.                       |
 
 ---
 
@@ -622,7 +656,7 @@ These are factual observations from the current source code, in priority order:
 
 Before submitting changes:
 
-- [ ] `cargo test` passes (all 2+ tests)
+- [ ] `cargo test` passes (all 14+ tests)
 - [ ] `cargo build` succeeds with **no warnings**
 - [ ] `cargo clippy` reports no warnings
 - [ ] `cargo fmt --check` exits cleanly (no formatting diffs)
@@ -630,13 +664,17 @@ Before submitting changes:
 - [ ] Example command runs without errors:
 
   ```bash
-  cargo run -- --trace ./examples/trace.json --config ./examples/pinzit.toml --outdir ./test_out
+  cargo run -- --trace ./examples/trace.json --config ./examples/pinzit.toml --outdir ./test_out --format html,json,csv
   ```
 
-- [ ] Expected output files are generated in `./test_out/`
+- [ ] Expected output files are generated in `./test_out/` (including `pinzit_constraints.csv`)
 - [ ] Exit codes behave correctly (`0` = PASS, `1` = FAIL, `2` = error)
 - [ ] No external crates added to `Cargo.toml` without explicit approval
 - [ ] New constraints are documented in Section 7 of this file and in `README.md`
+- [ ] `npm run typecheck` passes in `web/`
+- [ ] `npm run build:guard` passes in `web/` (main chunk <= 220KB)
+- [ ] No `lucide-react` imports remain in `web/src`
+- [ ] No emojis or bullet characters (`•`) in UI code/markup
 
 ---
 

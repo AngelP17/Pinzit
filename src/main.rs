@@ -49,6 +49,58 @@ struct ConstraintResult {
     recommendations: Vec<String>,
 }
 
+#[derive(Debug, Clone)]
+struct Metadata {
+    run_id: String,
+    generated_at: String,
+    trace_file: String,
+    config_file: String,
+    pinzit_version: String,
+}
+
+#[derive(Debug, Clone)]
+struct Summary {
+    overall_verdict: String,
+    parsed_span_count: usize,
+    failed_constraint_count: u64,
+    critical_path_ms: u64,
+    max_propagation_hops_seen: u64,
+}
+
+#[derive(Debug, Clone)]
+struct TimelineEvent {
+    timestamp_ns: u64,
+    span_id: String,
+    parent_span_id: Option<String>,
+    name: String,
+    event_type: String,
+    severity: String,
+    constraint_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct TraceNode {
+    id: String,
+    label: String,
+    kind: String,
+    verdict: String,
+    duration_ms: u64,
+}
+
+#[derive(Debug, Clone)]
+struct TraceEdge {
+    source: String,
+    target: String,
+    kind: String,
+    latency_ms: u64,
+}
+
+#[derive(Debug, Clone)]
+struct TraceGraph {
+    nodes: Vec<TraceNode>,
+    edges: Vec<TraceEdge>,
+}
+
 fn main() {
     let cli = match parse_args(env::args().collect()) {
         Ok(cli) => cli,
@@ -183,6 +235,26 @@ fn run(cli: &Cli) -> Result<i32, String> {
         );
     }
 
+    let failed_constraint_count =
+        constraints.values().filter(|c| c.verdict == "FAIL").count() as u64;
+    let critical_path_ms = spans.iter().filter_map(span_duration_ms).max().unwrap_or(0);
+    let max_propagation_hops_seen = constraints
+        .get("brc_003")
+        .and_then(|c| c.metrics.iter().find(|(k, _)| k == "max_hops_seen"))
+        .and_then(|(_, v)| v.parse().ok())
+        .unwrap_or(0);
+
+    let metadata = build_metadata(cli);
+    let summary = Summary {
+        overall_verdict: overall_verdict.clone(),
+        parsed_span_count: spans.len(),
+        failed_constraint_count,
+        critical_path_ms,
+        max_propagation_hops_seen,
+    };
+    let timeline = build_timeline(&spans, &constraints);
+    let graph = build_graph(&spans);
+
     let formats: Vec<&str> = cli
         .format
         .split(',')
@@ -191,10 +263,19 @@ fn run(cli: &Cli) -> Result<i32, String> {
         .collect();
 
     if formats.contains(&"json") {
-        write_json(&cli.outdir, &overall_verdict, &constraints)?;
+        write_json(
+            &cli.outdir,
+            &overall_verdict,
+            &constraints,
+            &metadata,
+            &summary,
+            &timeline,
+            &graph,
+        )?;
     }
     if formats.contains(&"csv") {
         write_csv(&cli.outdir, span_count, spans.len(), &overall_verdict)?;
+        write_constraints_csv(&cli.outdir, &constraints)?;
     }
     if formats.contains(&"html") {
         write_html(
@@ -205,6 +286,10 @@ fn run(cli: &Cli) -> Result<i32, String> {
             &overall_verdict,
             &constraints,
             recommendations_enabled,
+            &metadata,
+            &summary,
+            &timeline,
+            &graph,
         )?;
     }
 
@@ -213,6 +298,87 @@ fn run(cli: &Cli) -> Result<i32, String> {
     } else {
         Ok(0)
     }
+}
+
+fn build_metadata(cli: &Cli) -> Metadata {
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default();
+    let run_id = format!("pinzit_{}_{}", now.as_secs(), now.subsec_nanos());
+    Metadata {
+        run_id,
+        generated_at: format!("{}", now.as_secs()),
+        trace_file: cli.trace.display().to_string(),
+        config_file: cli.config.display().to_string(),
+        pinzit_version: "0.1.0".to_string(),
+    }
+}
+
+fn build_timeline(
+    spans: &[SpanRecord],
+    constraints: &BTreeMap<String, ConstraintResult>,
+) -> Vec<TimelineEvent> {
+    let mut events = Vec::new();
+    for (i, span) in spans.iter().enumerate() {
+        let name_lower = span.name.to_ascii_lowercase();
+        let severity = if name_lower.contains("fault")
+            || name_lower.contains("error")
+            || name_lower.contains("loss")
+        {
+            "critical"
+        } else {
+            "info"
+        };
+        let mut refs = Vec::new();
+        for (cid, result) in constraints {
+            if result.evidence_spans.contains(&span.name) {
+                refs.push(cid.clone());
+            }
+        }
+        events.push(TimelineEvent {
+            timestamp_ns: span.start_ns.unwrap_or(0),
+            span_id: span.span_id.clone().unwrap_or_else(|| format!("span_{i}")),
+            parent_span_id: span.parent_span_id.clone(),
+            name: span.name.clone(),
+            event_type: if span.parent_span_id.is_none() {
+                "root".to_string()
+            } else {
+                "child".to_string()
+            },
+            severity: severity.to_string(),
+            constraint_refs: refs,
+        });
+    }
+    events.sort_by(|a, b| a.timestamp_ns.cmp(&b.timestamp_ns));
+    events
+}
+
+fn build_graph(spans: &[SpanRecord]) -> TraceGraph {
+    let mut nodes = Vec::new();
+    let mut edges = Vec::new();
+    let mut seen = BTreeMap::new();
+    for span in spans {
+        let id = span.span_id.clone().unwrap_or_else(|| span.name.clone());
+        if !seen.contains_key(&id) {
+            seen.insert(id.clone(), true);
+            nodes.push(TraceNode {
+                id: id.clone(),
+                label: span.name.clone(),
+                kind: "service".to_string(),
+                verdict: "PASS".to_string(),
+                duration_ms: span_duration_ms(span).unwrap_or(0),
+            });
+        }
+        if let Some(parent) = &span.parent_span_id {
+            edges.push(TraceEdge {
+                source: parent.clone(),
+                target: id.clone(),
+                kind: "parent_child".to_string(),
+                latency_ms: span_duration_ms(span).unwrap_or(0),
+            });
+        }
+    }
+    TraceGraph { nodes, edges }
 }
 
 fn evaluate_slfs(
@@ -1069,17 +1235,75 @@ fn render_constraint_json(constraint: &ConstraintResult) -> String {
 
 fn write_json(
     outdir: &Path,
-    overall_verdict: &str,
+    _overall_verdict: &str,
     constraints: &BTreeMap<String, ConstraintResult>,
+    metadata: &Metadata,
+    summary: &Summary,
+    timeline: &[TimelineEvent],
+    graph: &TraceGraph,
 ) -> Result<(), String> {
     let mut ordered = Vec::new();
     for (name, value) in constraints {
         ordered.push(format!("\"{name}\": {}", render_constraint_json(value)));
     }
 
+    let timeline_json = timeline
+        .iter()
+        .map(|e| {
+            format!(
+                "{{\"timestamp_ns\": {}, \"span_id\": \"{}\", \"parent_span_id\": {}, \"name\": \"{}\", \"event_type\": \"{}\", \"severity\": \"{}\", \"constraint_refs\": [{}]}}",
+                e.timestamp_ns,
+                e.span_id,
+                e.parent_span_id.as_ref().map(|s| format!("\"{s}\"")).unwrap_or_else(|| "null".to_string()),
+                e.name,
+                e.event_type,
+                e.severity,
+                e.constraint_refs.iter().map(|r| format!("\"{r}\"")).collect::<Vec<_>>().join(", ")
+            )
+        })
+        .collect::<Vec<_>>()
+        .join(",\n    ");
+
+    let nodes_json = graph
+        .nodes
+        .iter()
+        .map(|n| {
+            format!(
+                "{{\"id\": \"{}\", \"label\": \"{}\", \"kind\": \"{}\", \"verdict\": \"{}\", \"duration_ms\": {}}}",
+                n.id, n.label, n.kind, n.verdict, n.duration_ms
+            )
+        })
+        .collect::<Vec<_>>()
+        .join(",\n    ");
+
+    let edges_json = graph
+        .edges
+        .iter()
+        .map(|e| {
+            format!(
+                "{{\"source\": \"{}\", \"target\": \"{}\", \"kind\": \"{}\", \"latency_ms\": {}}}",
+                e.source, e.target, e.kind, e.latency_ms
+            )
+        })
+        .collect::<Vec<_>>()
+        .join(",\n    ");
+
     let payload = format!(
-        "{{\n  \"overall_verdict\": \"{overall_verdict}\",\n  \"constraints\": {{\n    {}\n  }}\n}}\n",
-        ordered.join(",\n    ")
+        "{{\n  \"metadata\": {{\n    \"run_id\": \"{}\",\n    \"generated_at\": \"{}\",\n    \"trace_file\": \"{}\",\n    \"config_file\": \"{}\",\n    \"pinzit_version\": \"{}\"\n  }},\n  \"summary\": {{\n    \"overall_verdict\": \"{}\",\n    \"parsed_span_count\": {},\n    \"failed_constraint_count\": {},\n    \"critical_path_ms\": {},\n    \"max_propagation_hops_seen\": {}\n  }},\n  \"constraints\": {{\n    {}\n  }},\n  \"timeline\": [\n    {}\n  ],\n  \"graph\": {{\n    \"nodes\": [\n      {}\n    ],\n    \"edges\": [\n      {}\n    ]\n  }}\n}}\n",
+        metadata.run_id,
+        metadata.generated_at,
+        metadata.trace_file,
+        metadata.config_file,
+        metadata.pinzit_version,
+        summary.overall_verdict,
+        summary.parsed_span_count,
+        summary.failed_constraint_count,
+        summary.critical_path_ms,
+        summary.max_propagation_hops_seen,
+        ordered.join(",\n    "),
+        timeline_json,
+        nodes_json,
+        edges_json
     );
 
     let path = outdir.join("pinzit_verdict.json");
@@ -1100,6 +1324,46 @@ fn write_csv(
     fs::write(&path, payload).map_err(|e| format!("failed to write {}: {e}", path.display()))
 }
 
+fn write_constraints_csv(
+    outdir: &Path,
+    constraints: &BTreeMap<String, ConstraintResult>,
+) -> Result<(), String> {
+    let path = outdir.join("pinzit_constraints.csv");
+    let mut payload = String::from(
+        "constraint_id,verdict,metric,threshold,observed,evidence_count,recommendation_count\n",
+    );
+    for (name, result) in constraints {
+        let threshold = result
+            .metrics
+            .iter()
+            .find(|(k, _)| k.ends_with("_ms"))
+            .map(|(_, v)| v.as_str())
+            .unwrap_or("");
+        let observed = result
+            .metrics
+            .iter()
+            .find(|(k, _)| k.ends_with("_seen") || k.ends_with("_count"))
+            .map(|(_, v)| v.as_str())
+            .unwrap_or("");
+        payload.push_str(&format!(
+            "{},{},{},{},{},{},{}\n",
+            name,
+            result.verdict,
+            result
+                .metrics
+                .first()
+                .map(|(k, _)| k.as_str())
+                .unwrap_or(""),
+            threshold,
+            observed,
+            result.evidence_spans.len(),
+            result.recommendations.len()
+        ));
+    }
+    fs::write(&path, payload).map_err(|e| format!("failed to write {}: {e}", path.display()))
+}
+
+#[allow(clippy::too_many_arguments)]
 fn write_html(
     outdir: &Path,
     config: &Config,
@@ -1108,6 +1372,10 @@ fn write_html(
     overall_verdict: &str,
     constraints: &BTreeMap<String, ConstraintResult>,
     recommendations_enabled: bool,
+    metadata: &Metadata,
+    summary: &Summary,
+    timeline: &[TimelineEvent],
+    graph: &TraceGraph,
 ) -> Result<(), String> {
     let path = outdir.join("pinzit_report.html");
     let recommendations = if recommendations_enabled {
@@ -1119,23 +1387,44 @@ fn write_html(
     let mut constraint_rows = String::new();
     for (name, result) in constraints {
         constraint_rows.push_str(&format!(
-            "<tr><td>{}</td><td>{}</td><td>{}</td></tr>",
+            "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>",
             name,
             result.verdict,
-            result.evidence_spans.len()
+            result
+                .metrics
+                .first()
+                .map(|(k, _)| k.as_str())
+                .unwrap_or(""),
+            result.evidence_spans.len(),
+            result.recommendations.len()
+        ));
+    }
+
+    let mut timeline_rows = String::new();
+    for e in timeline.iter().take(20) {
+        timeline_rows.push_str(&format!(
+            "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>",
+            e.timestamp_ns, e.name, e.event_type, e.severity
         ));
     }
 
     let payload = format!(
-        "<!DOCTYPE html>\n<html><head><meta charset=\"UTF-8\"><title>Pinzit Report</title></head><body>\n<h1>Pinzit Audit Report</h1>\n<p><strong>Audit:</strong> {}</p>\n<p><strong>Auditor:</strong> {}</p>\n<p><strong>Standard:</strong> {}</p>\n<p><strong>Overall Verdict:</strong> {}</p>\n<p><strong>Resource Span Markers:</strong> {}</p>\n<p><strong>Parsed Span Count:</strong> {}</p>\n<p><strong>Recommendations:</strong> {}</p>\n<h2>Constraint Summary</h2>\n<table border=\"1\" cellpadding=\"4\" cellspacing=\"0\">\n<tr><th>Constraint</th><th>Verdict</th><th>Evidence Count</th></tr>\n{}\n</table>\n</body></html>\n",
+        "<!DOCTYPE html>\n<html><head><meta charset=\"UTF-8\"><title>Pinzit Report</title><style>body{{font-family:sans-serif;background:#0a0a0b;color:#f6f7f9;padding:2rem}}table{{border-collapse:collapse;width:100%;margin-top:1rem}}th,td{{border:1px solid #26262b;padding:8px;text-align:left}}th{{background:#1a1a1e}}h1,h2{{color:#fff}}.pass{{color:#22c55e}}.fail{{color:#ef4444}}</style></head><body>\n<h1>Pinzit Audit Report</h1>\n<p><strong>Run ID:</strong> {}</p>\n<p><strong>Audit:</strong> {}</p>\n<p><strong>Auditor:</strong> {}</p>\n<p><strong>Standard:</strong> {}</p>\n<p><strong>Overall Verdict:</strong> <span class=\"{}\">{}</span></p>\n<p><strong>Resource Span Markers:</strong> {}</p>\n<p><strong>Parsed Span Count:</strong> {}</p>\n<p><strong>Failed Constraints:</strong> {}</p>\n<p><strong>Critical Path:</strong> {}ms</p>\n<p><strong>Recommendations:</strong> {}</p>\n<h2>Constraint Summary</h2>\n<table>\n<tr><th>Constraint</th><th>Verdict</th><th>Key Metric</th><th>Evidence</th><th>Recommendations</th></tr>\n{}\n</table>\n<h2>Incident Timeline</h2>\n<table>\n<tr><th>Timestamp</th><th>Name</th><th>Type</th><th>Severity</th></tr>\n{}\n</table>\n<h2>Graph Summary</h2>\n<p>Nodes: {} | Edges: {}</p>\n</body></html>\n",
+        metadata.run_id,
         config.audit_name,
         config.auditor,
         config.standard,
+        if overall_verdict == "PASS" { "pass" } else { "fail" },
         overall_verdict,
         span_count,
         parsed_spans,
+        summary.failed_constraint_count,
+        summary.critical_path_ms,
         recommendations,
-        constraint_rows
+        constraint_rows,
+        timeline_rows,
+        graph.nodes.len(),
+        graph.edges.len()
     );
 
     fs::write(&path, payload).map_err(|e| format!("failed to write {}: {e}", path.display()))
@@ -1251,5 +1540,250 @@ isolation_boundary_attribute = "fault.isolation"
 
         let code = run(&cli).expect("run should succeed");
         assert_eq!(code, 1);
+    }
+
+    #[test]
+    fn parse_args_requires_trace() {
+        let args = vec!["pinzit".to_string()];
+        let result = parse_args(args);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("--trace is required"));
+    }
+
+    #[test]
+    fn parse_args_parses_all_flags() {
+        let args = vec![
+            "pinzit".to_string(),
+            "--trace".to_string(),
+            "./trace.json".to_string(),
+            "--config".to_string(),
+            "./pinzit.toml".to_string(),
+            "--outdir".to_string(),
+            "./out".to_string(),
+            "--format".to_string(),
+            "json".to_string(),
+            "--fail-fast".to_string(),
+            "--no-recommend".to_string(),
+        ];
+        let cli = parse_args(args).expect("should parse");
+        assert_eq!(cli.trace, PathBuf::from("./trace.json"));
+        assert_eq!(cli.config, PathBuf::from("./pinzit.toml"));
+        assert_eq!(cli.outdir, PathBuf::from("./out"));
+        assert_eq!(cli.format, "json");
+        assert!(cli.fail_fast);
+        assert!(cli.no_recommend);
+    }
+
+    #[test]
+    fn invalid_config_missing_key() {
+        let raw = "audit_name = \"test\"";
+        let result = parse_config(raw);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn invalid_json_shape_rejects_array() {
+        assert!(validate_json_shape("[]").is_err());
+        assert!(validate_json_shape("not json").is_err());
+    }
+
+    #[test]
+    fn slfs_boundary_no_unsafe_actions_passes() {
+        let cfg = parse_config(CONFIG_RAW).expect("config should parse");
+        let spans = vec![
+            SpanRecord {
+                name: "signal_loss_event".to_string(),
+                span_id: Some("1".to_string()),
+                parent_span_id: None,
+                start_ns: Some(1_000_000_000),
+                end_ns: Some(1_100_000_000),
+                attributes: BTreeMap::new(),
+            },
+            SpanRecord {
+                name: "safe_state".to_string(),
+                span_id: Some("3".to_string()),
+                parent_span_id: None,
+                start_ns: Some(1_200_000_000),
+                end_ns: Some(1_300_000_000),
+                attributes: BTreeMap::new(),
+            },
+        ];
+        let result = evaluate_slfs(&cfg, &spans, true);
+        assert_eq!(result.verdict, "PASS");
+    }
+
+    #[test]
+    fn rtcb_boundary_within_limit_passes() {
+        let cfg = parse_config(CONFIG_RAW).expect("config should parse");
+        let mut attrs = BTreeMap::new();
+        attrs.insert("recovery.complete".to_string(), "true".to_string());
+        let spans = vec![SpanRecord {
+            name: "system.recovery".to_string(),
+            span_id: Some("1".to_string()),
+            parent_span_id: None,
+            start_ns: Some(1_000_000_000),
+            end_ns: Some(1_010_000_000),
+            attributes: attrs,
+        }];
+        let result = evaluate_rtcb(&cfg, &spans, true);
+        assert_eq!(result.verdict, "PASS");
+    }
+
+    #[test]
+    fn rtcb_boundary_over_limit_fails() {
+        let cfg = parse_config(CONFIG_RAW).expect("config should parse");
+        let spans = vec![SpanRecord {
+            name: "system.recovery".to_string(),
+            span_id: Some("1".to_string()),
+            parent_span_id: None,
+            start_ns: Some(1_000_000_000),
+            end_ns: Some(1_000_000_000 + 31_000_000_000),
+            attributes: BTreeMap::new(),
+        }];
+        let result = evaluate_rtcb(&cfg, &spans, true);
+        assert_eq!(result.verdict, "FAIL");
+    }
+
+    #[test]
+    fn brc_propagation_within_hops_passes() {
+        let cfg = parse_config(CONFIG_RAW).expect("config should parse");
+        let mut attrs = BTreeMap::new();
+        attrs.insert("fault.isolation".to_string(), "true".to_string());
+        let spans = vec![
+            SpanRecord {
+                name: "fault_root".to_string(),
+                span_id: Some("1".to_string()),
+                parent_span_id: None,
+                start_ns: Some(1_000_000_000),
+                end_ns: Some(1_100_000_000),
+                attributes: BTreeMap::new(),
+            },
+            SpanRecord {
+                name: "child_span".to_string(),
+                span_id: Some("2".to_string()),
+                parent_span_id: Some("1".to_string()),
+                start_ns: Some(1_200_000_000),
+                end_ns: Some(1_300_000_000),
+                attributes: attrs,
+            },
+        ];
+        let result = evaluate_brc(&cfg, &spans, true);
+        assert_eq!(result.verdict, "PASS");
+    }
+
+    #[test]
+    fn brc_propagation_exceeds_hops_fails() {
+        let cfg = parse_config(CONFIG_RAW).expect("config should parse");
+        let spans = vec![
+            SpanRecord {
+                name: "fault_root".to_string(),
+                span_id: Some("1".to_string()),
+                parent_span_id: None,
+                start_ns: Some(1_000_000_000),
+                end_ns: Some(1_100_000_000),
+                attributes: BTreeMap::new(),
+            },
+            SpanRecord {
+                name: "level1".to_string(),
+                span_id: Some("2".to_string()),
+                parent_span_id: Some("1".to_string()),
+                start_ns: Some(1_200_000_000),
+                end_ns: Some(1_300_000_000),
+                attributes: BTreeMap::new(),
+            },
+            SpanRecord {
+                name: "level2".to_string(),
+                span_id: Some("3".to_string()),
+                parent_span_id: Some("2".to_string()),
+                start_ns: Some(1_400_000_000),
+                end_ns: Some(1_500_000_000),
+                attributes: BTreeMap::new(),
+            },
+            SpanRecord {
+                name: "level3".to_string(),
+                span_id: Some("4".to_string()),
+                parent_span_id: Some("3".to_string()),
+                start_ns: Some(1_600_000_000),
+                end_ns: Some(1_700_000_000),
+                attributes: BTreeMap::new(),
+            },
+        ];
+        let result = evaluate_brc(&cfg, &spans, true);
+        assert_eq!(result.verdict, "FAIL");
+    }
+
+    #[test]
+    fn writers_produce_files() {
+        let ts = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let base = env::temp_dir().join(format!("pinzit_writer_test_{ts}"));
+        fs::create_dir_all(&base).unwrap();
+
+        let mut constraints = BTreeMap::new();
+        constraints.insert(
+            "slfs_001".to_string(),
+            ConstraintResult {
+                verdict: "PASS".to_string(),
+                metrics: vec![("signal_loss_timeout_ms".to_string(), "500".to_string())],
+                evidence_spans: vec!["trace.span.signal_loss".to_string()],
+                recommendations: vec!["Block unsafe operations.".to_string()],
+            },
+        );
+
+        let metadata = Metadata {
+            run_id: "test_run".to_string(),
+            generated_at: "0".to_string(),
+            trace_file: "trace.json".to_string(),
+            config_file: "pinzit.toml".to_string(),
+            pinzit_version: "0.1.0".to_string(),
+        };
+
+        let summary = Summary {
+            overall_verdict: "PASS".to_string(),
+            parsed_span_count: 2,
+            failed_constraint_count: 0,
+            critical_path_ms: 100,
+            max_propagation_hops_seen: 0,
+        };
+
+        let timeline = vec![];
+        let graph = TraceGraph {
+            nodes: vec![],
+            edges: vec![],
+        };
+
+        write_json(
+            &base,
+            "PASS",
+            &constraints,
+            &metadata,
+            &summary,
+            &timeline,
+            &graph,
+        )
+        .unwrap();
+        write_csv(&base, 1, 2, "PASS").unwrap();
+        write_constraints_csv(&base, &constraints).unwrap();
+        write_html(
+            &base,
+            &parse_config(CONFIG_RAW).unwrap(),
+            1,
+            2,
+            "PASS",
+            &constraints,
+            true,
+            &metadata,
+            &summary,
+            &timeline,
+            &graph,
+        )
+        .unwrap();
+
+        assert!(base.join("pinzit_verdict.json").exists());
+        assert!(base.join("pinzit_stats.csv").exists());
+        assert!(base.join("pinzit_constraints.csv").exists());
+        assert!(base.join("pinzit_report.html").exists());
     }
 }

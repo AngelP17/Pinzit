@@ -1,10 +1,10 @@
-import { Network, RefreshCw, Shield } from 'lucide-react';
+import { Network, ArrowsClockwise, Shield } from '@phosphor-icons/react';
 import type { ConstraintId, ConstraintResult } from '../../types/pinzit';
 import { VerdictBadge } from '../shared/VerdictBadge';
 
 const iconMap = {
   slfs_001: Shield,
-  rtcb_002: RefreshCw,
+  rtcb_002: ArrowsClockwise,
   brc_003: Network,
 };
 
@@ -21,7 +21,7 @@ export function ScorecardCard({ id, result, onClick }: { id: ConstraintId; resul
   return (
     <button onClick={onClick} className={`panel cursor-pointer p-4 text-left transition-colors hover:border-surface-500 ${result.verdict === 'FAIL' ? 'border-l-4 border-l-fail' : result.verdict === 'PASS' ? 'border-l-4 border-l-pass' : 'border-l-4 border-l-skip'}`}>
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2"><Icon size={16} /><span className="font-semibold">{id}</span></div>
+        <div className="flex items-center gap-2"><Icon size={16} weight="duotone" /><span className="font-semibold">{id}</span></div>
         <VerdictBadge verdict={result.verdict} />
       </div>
       <p className="mt-1 text-sm text-zinc-300">{labels[id]}</p>

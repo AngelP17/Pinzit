@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X, Check } from '@phosphor-icons/react';
 
 export function FileChip({
   label,
@@ -12,7 +12,7 @@ export function FileChip({
   onRemove?: () => void;
 }) {
   const title = fileMeta
-    ? `${Math.round(fileMeta.size / 1024)} KB • ${fileMeta.modifiedAt}`
+    ? `${Math.round(fileMeta.size / 1024)} KB — ${fileMeta.modifiedAt}`
     : 'No file loaded';
   return (
     <div
@@ -21,14 +21,14 @@ export function FileChip({
         loaded ? 'border-pass/50 text-pass' : 'border-surface-600 text-zinc-300'
       }`}
     >
-      {loaded ? '✓' : '•'} {label}
+      {loaded ? <Check size={10} weight="bold" className="text-pass" /> : <span className="text-zinc-500">-</span>} {label}
       {loaded && onRemove ? (
         <button
           aria-label={`Remove ${label}`}
           onClick={onRemove}
           className="rounded-full p-0.5 hover:bg-surface-700 focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          <X size={12} />
+          <X size={12} weight="bold" />
         </button>
       ) : null}
     </div>

@@ -1,4 +1,4 @@
-import { Upload, ShieldCheck } from 'lucide-react';
+import { Upload, ShieldCheck } from '@phosphor-icons/react';
 import { useRef, useState } from 'react';
 import { useRunStore } from '../../store/run-store';
 import { CompatBadge } from './CompatBadge';
@@ -120,10 +120,10 @@ export function DropzonePanel() {
             : 'border-surface-600 hover:border-pass/60 hover:bg-gradient-to-r hover:from-pass/10 hover:to-transparent'
         }`}
       >
-        <Upload className="mx-auto mb-2 h-7 w-7 animate-pulse text-zinc-300 group-hover:text-pass" />
+        <Upload className="mx-auto mb-2 h-7 w-7 animate-pulse text-zinc-300 group-hover:text-pass" weight="duotone" />
         <p className="text-lg font-semibold">Drop pinzit_verdict.json + pinzit_stats.csv</p>
         <p className="mt-1 inline-flex items-center gap-1 text-sm text-zinc-400" title="No data leaves your browser">
-          <ShieldCheck size={14} /> All parsing happens in your browser.
+          <ShieldCheck size={14} weight="duotone" /> All parsing happens in your browser.
         </p>
       </button>
 

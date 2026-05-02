@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Header } from './components/layout/Header';
 import { Shell } from './components/layout/Shell';
 import { TabBar } from './components/layout/TabBar';
@@ -7,6 +7,7 @@ import { EvidenceDrawer } from './components/evidence/EvidenceDrawer';
 import { DiffMode } from './components/diff/DiffMode';
 import { useRunStore } from './store/run-store';
 import { useKeyboard } from './hooks/useKeyboard';
+import { loadSamplePass } from './lib/sample-data';
 
 const OverviewTab = lazy(() =>
   import('./components/overview/OverviewTab').then((m) => ({ default: m.OverviewTab }))
@@ -16,6 +17,12 @@ const FindingsTab = lazy(() =>
 );
 const EvidenceTab = lazy(() =>
   import('./components/evidence/EvidenceTab').then((m) => ({ default: m.EvidenceTab }))
+);
+const TimelineTab = lazy(() =>
+  import('./components/timeline/TimelineTab').then((m) => ({ default: m.TimelineTab }))
+);
+const CIGateTab = lazy(() =>
+  import('./components/ci-gate/CIGateTab').then((m) => ({ default: m.CIGateTab }))
 );
 const CompareModal = lazy(() =>
   import('./components/diff/CompareModal').then((m) => ({ default: m.CompareModal }))
@@ -31,6 +38,17 @@ function App({ onBack }: { onBack?: () => void }) {
   const comparisonRun = useRunStore((s) => s.comparisonRun);
   const activeTab = useRunStore((s) => s.activeTab);
   const mode = useRunStore((s) => s.viewMode);
+  const setPrimaryRun = useRunStore((s) => s.setPrimaryRun);
+
+  useEffect(() => {
+    if (!run) {
+      try {
+        setPrimaryRun(loadSamplePass());
+      } catch {
+        // ignore
+      }
+    }
+  }, [run, setPrimaryRun]);
 
   return (
     <Shell mode={mode}>
@@ -43,6 +61,8 @@ function App({ onBack }: { onBack?: () => void }) {
         {activeTab === 'overview' && <OverviewTab run={run} />}
         {activeTab === 'findings' && <FindingsTab run={run} />}
         {activeTab === 'evidence' && <EvidenceTab run={run} />}
+        {activeTab === 'timeline' && <TimelineTab run={run} />}
+        {activeTab === 'ci-gate' && <CIGateTab run={run} />}
       </Suspense>
 
       <EvidenceDrawer run={run} />

@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { ConstraintId, RunBundle, VerdictState } from '../types/pinzit';
 
 type ViewMode = 'audit' | 'explore' | 'focus';
-type ActiveTab = 'overview' | 'findings' | 'evidence';
+type ActiveTab = 'overview' | 'findings' | 'evidence' | 'timeline' | 'ci-gate';
 type ToastTone = 'success' | 'error' | 'info';
 
 type Toast = {

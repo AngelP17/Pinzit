@@ -38,6 +38,19 @@ function ParticleCloud({ reduceMotion }: { reduceMotion: boolean }) {
   );
 }
 
+function isWebGLAvailable() {
+  if (typeof window === 'undefined') return false;
+  try {
+    const canvas = document.createElement('canvas');
+    return !!(
+      window.WebGLRenderingContext &&
+      (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
+    );
+  } catch {
+    return false;
+  }
+}
+
 export default function HeroCanvas() {
   const [disabled, setDisabled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -60,7 +73,7 @@ export default function HeroCanvas() {
     };
   }, []);
 
-  if (disabled || isMobile) return null;
+  if (disabled || isMobile || !isWebGLAvailable()) return null;
 
   return (
     <div className="pointer-events-none absolute inset-0 -z-10">

@@ -1,12 +1,12 @@
 import {
   ArrowLeft,
+  ArrowsLeftRight,
   Compass,
   Download,
-  GitCompare,
   Keyboard,
   ShieldCheck,
   Target,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 import { useRunStore } from '../../store/run-store';
 import { exportCSV, exportJSON } from '../../lib/export';
 
@@ -25,7 +25,7 @@ export function Header({ onBack }: { onBack?: () => void }) {
             onClick={onBack}
             className="mb-2 inline-flex items-center gap-1 rounded-lg border border-surface-600 px-2.5 py-1 text-xs text-zinc-300 hover:border-surface-500 focus-visible:ring-2 focus-visible:ring-blue-500"
           >
-            <ArrowLeft size={12} /> Back
+            <ArrowLeft size={12} weight="bold" /> Back
           </button>
         ) : null}
         <div className="inline-flex items-center gap-3">
@@ -41,33 +41,33 @@ export function Header({ onBack }: { onBack?: () => void }) {
           onClick={() => setViewMode('audit')}
           className="inline-flex items-center gap-1 rounded-lg border border-surface-600 px-3 py-1.5 text-sm hover:border-pass/70 focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          <ShieldCheck size={14} /> Audit
+          <ShieldCheck size={14} weight="duotone" /> Audit
         </button>
         <button
           onClick={() => setViewMode('explore')}
           className="inline-flex items-center gap-1 rounded-lg border border-surface-600 px-3 py-1.5 text-sm hover:border-pass/70 focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          <Compass size={14} /> Explore
+          <Compass size={14} weight="duotone" /> Explore
         </button>
         <button
           onClick={() => setViewMode('focus')}
           className="inline-flex items-center gap-1 rounded-lg border border-surface-600 px-3 py-1.5 text-sm hover:border-pass/70 focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          <Target size={14} /> Focus
+          <Target size={14} weight="duotone" /> Focus
         </button>
         <button
           aria-label="Open command palette"
           onClick={() => setPaletteOpen(true)}
           className="inline-flex items-center gap-1 rounded-lg border border-surface-600 px-3 py-1.5 text-sm hover:border-surface-500 focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          <Keyboard size={14} /> Cmd+K
+          <Keyboard size={14} weight="duotone" /> Cmd+K
         </button>
         <button
           aria-label="Open compare run modal"
           onClick={() => setCompareModalOpen(true)}
           className="inline-flex items-center gap-1 rounded-lg border border-surface-600 px-3 py-1.5 text-sm hover:border-surface-500 focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          <GitCompare size={14} /> Compare Run
+          <ArrowsLeftRight size={14} weight="duotone" /> Compare Run
         </button>
         <button
           aria-label="Export verdict JSON"
@@ -75,7 +75,7 @@ export function Header({ onBack }: { onBack?: () => void }) {
           onClick={() => run && exportJSON(run.verdict)}
           className="inline-flex items-center gap-1 rounded-lg border border-surface-600 px-3 py-1.5 text-sm disabled:opacity-40 hover:border-surface-500 focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          <Download size={14} /> JSON {run ? <span className="rounded bg-pass/20 px-1 text-[10px] text-pass">READY</span> : null}
+          <Download size={14} weight="duotone" /> JSON {run ? <span className="rounded bg-pass/20 px-1 text-[10px] text-pass">READY</span> : null}
         </button>
         <button
           aria-label="Export stats CSV"
@@ -83,7 +83,7 @@ export function Header({ onBack }: { onBack?: () => void }) {
           onClick={() => run && exportCSV(run.csvRows)}
           className="inline-flex items-center gap-1 rounded-lg border border-surface-600 px-3 py-1.5 text-sm disabled:opacity-40 hover:border-surface-500 focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          <Download size={14} /> CSV {run ? <span className="rounded bg-pass/20 px-1 text-[10px] text-pass">READY</span> : null}
+          <Download size={14} weight="duotone" /> CSV {run ? <span className="rounded bg-pass/20 px-1 text-[10px] text-pass">READY</span> : null}
         </button>
       </div>
     </header>

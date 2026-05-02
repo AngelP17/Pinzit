@@ -5,6 +5,8 @@ const tabs = [
   { id: 'overview', label: 'Overview' },
   { id: 'findings', label: 'Findings' },
   { id: 'evidence', label: 'Evidence' },
+  { id: 'timeline', label: 'Timeline' },
+  { id: 'ci-gate', label: 'CI Gate' },
 ] as const;
 
 export function TabBar() {

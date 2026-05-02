@@ -1,4 +1,4 @@
-import { ArrowRight, Github } from 'lucide-react';
+import { ArrowRight, GithubLogo } from '@phosphor-icons/react';
 
 export function FinalCTA({ onLaunch }: { onLaunch: () => void }) {
   return (
@@ -11,7 +11,7 @@ export function FinalCTA({ onLaunch }: { onLaunch: () => void }) {
             onClick={onLaunch}
             className="inline-flex items-center gap-2 rounded-md border border-[#00f0ff]/40 bg-[#00f0ff]/10 px-5 py-3 text-sm font-semibold text-[#00f0ff] hover:bg-[#00f0ff]/20 focus-visible:ring-2 focus-visible:ring-blue-500"
           >
-            Launch Control Room <ArrowRight size={16} />
+            Launch Control Room <ArrowRight size={16} weight="duotone" />
           </button>
           <a
             href="https://github.com/AngelP17/Pinzit"
@@ -19,7 +19,7 @@ export function FinalCTA({ onLaunch }: { onLaunch: () => void }) {
             rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-md border border-white/20 px-5 py-3 text-sm text-zinc-100 hover:border-white/40 focus-visible:ring-2 focus-visible:ring-blue-500"
           >
-            <Github size={16} /> GitHub
+            <GithubLogo size={16} weight="duotone" /> GitHub
           </a>
         </div>
       </div>

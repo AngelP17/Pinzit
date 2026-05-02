@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle } from '@phosphor-icons/react';
 
 const differentiators = [
   {
@@ -45,7 +45,7 @@ export function WhyPinzitSection() {
               className="rounded-xl border border-white/12 bg-black/28 p-4"
             >
               <div className="flex items-start gap-2">
-                <CheckCircle2 size={16} className="mt-0.5 text-[#39ff14]" />
+                <CheckCircle size={16} weight="duotone" className="mt-0.5 text-[#39ff14]" />
                 <div>
                   <h4 className="text-sm font-semibold text-white">{item.title}</h4>
                   <p className="mt-1 text-sm text-zinc-300">{item.body}</p>

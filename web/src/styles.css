@@ -14,7 +14,7 @@
 
 body {
   margin: 0;
-  font-family: "IBM Plex Sans", "Avenir Next", sans-serif;
+  font-family: "Geist", "IBM Plex Sans", "Avenir Next", system-ui, sans-serif;
   color: #f6f7f9;
   background: radial-gradient(circle at 15% -20%, #1b3958 0%, #070c13 45%, #050608 100%);
 }
@@ -106,7 +106,7 @@ body {
 }
 
 .hero-headline {
-  font-family: "DM Serif Display", Georgia, serif;
+  font-family: "Geist", "IBM Plex Sans", system-ui, sans-serif;
   font-size: clamp(2.35rem, 6.5vw, 5.6rem);
   line-height: 1.03;
   letter-spacing: -0.02em;

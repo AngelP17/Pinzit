@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { ScanLine, ShieldCheck, Upload } from 'lucide-react';
+import { Aperture, ShieldCheck, Upload } from '@phosphor-icons/react';
 
 const steps = [
   { title: 'Upload', body: 'Drop verdict + stats artifacts directly in browser.', icon: Upload },
-  { title: 'Analyze', body: 'Pinzit evaluates SLFS-001, RTCB-002, and BRC-003.', icon: ScanLine },
+  { title: 'Analyze', body: 'Pinzit evaluates SLFS-001, RTCB-002, and BRC-003.', icon: Aperture },
   { title: 'Decide', body: 'Review deterministic evidence and export CI-grade results.', icon: ShieldCheck },
 ];
 
@@ -24,7 +24,7 @@ export function HowItWorksSection() {
             transition={{ delay: idx * 0.08 }}
             className="glass-panel rounded-2xl p-5"
           >
-            <step.icon className="text-[#00f0ff]" size={18} />
+            <step.icon className="text-[#00f0ff]" size={18} weight="duotone" />
             <h3 className="mt-3 text-lg font-semibold">{step.title}</h3>
             <p className="mt-2 text-sm text-zinc-300">{step.body}</p>
           </motion.article>

@@ -27,7 +27,7 @@ export function TopRisks({ findings }: { findings: FindingRow[] }) {
           <div key={row.id} className="rounded-md border border-fail/30 bg-fail/10 p-2">
             <p className="text-sm font-semibold text-zinc-100">{row.id}</p>
             <p className="text-xs text-zinc-300">
-              {row.severity} • {row.keyMetric}
+              {row.severity} — {row.keyMetric}
             </p>
           </div>
         ))}

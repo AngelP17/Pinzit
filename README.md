@@ -14,8 +14,9 @@
 > **Alpha / Functional Evaluation Phase.**
 > The CLI, config system, std-only trace parsing, and output writers are
 > implemented. Built-in constraints now evaluate parsed spans and can return
-> `PASS` or `FAIL` based on trace content. See [Roadmap](#roadmap) for
-> remaining quality and coverage improvements.
+> `PASS` or `FAIL` based on trace content. The web UI includes Timeline and
+> CI Gate tabs, artifact states, and auto-loaded sample data. See [Roadmap](#roadmap)
+> for remaining quality and coverage improvements.
 >
 > **Web UI included:** A client-only React control room now lives in
 > [`web/`](web), with a landing-first experience and interactive dashboard.
@@ -46,15 +47,15 @@ It answers questions that dashboards and runbooks don't:
 
 ## What Pinzit Is
 
-| ✓ | Capability |
-|---|------------|
-| ✓ | **Read-only analysis engine** for distributed-systems telemetry |
-| ✓ | **Causal graph reconstruction** from OpenTelemetry traces |
-| ✓ | **Constraint-based verdicts** (`PASS` / `FAIL`) |
-| ✓ | **Incident timeline reconstruction** |
-| ✓ | **Static, deterministic recommendations** (auditor-safe) |
-| ✓ | **Multi-format reporting**: HTML · JSON · CSV |
-| ✓ | **CI-ready** (exit codes + machine-readable output) |
+| Capability |
+|------------|
+| **Read-only analysis engine** for distributed-systems telemetry |
+| **Causal graph reconstruction** from OpenTelemetry traces |
+| **Constraint-based verdicts** (`PASS` / `FAIL`) |
+| **Incident timeline reconstruction** |
+| **Static, deterministic recommendations** (auditor-safe) |
+| **Multi-format reporting**: HTML · JSON · CSV |
+| **CI-ready** (exit codes + machine-readable output) |
 
 ## What Pinzit Is Not
 
@@ -134,16 +135,26 @@ Then open the local URL printed by Vite (usually
 The `web/` app is fully client-side (no backend) and now ships with:
 
 - Cinematic landing hero with layered atmosphere, floating nav, and motion choreography
-- Interactive control room dashboard (Overview, Findings, Evidence)
+- Interactive control room dashboard (Overview, Findings, Evidence, Timeline, CI Gate)
 - Compare-run modal for baseline vs current analysis
 - Strict file validation for `pinzit_verdict.json` + `pinzit_stats.csv`
 - Shared realistic mock-run generator powering landing live preview and sample loads
 - Local persistence (`pinzit-ui-v1`) for active run, tab, filters, and view state
 - Build guard that fails if the main bundle exceeds `220KB`
+- Auto-loaded sample data on first visit so the dashboard is never empty
+- Artifact states: invalid, partial, parse error, schema mismatch, degraded canvas
 
 ![Landing Hero](web/.snapshots/01-landing-hero.png)
 
-![Control Room](web/.snapshots/02-control-room.png)
+![Control Room Overview](web/.snapshots/02-control-room-overview.png)
+
+![Control Room Findings](web/.snapshots/03-control-room-findings.png)
+
+![Control Room Evidence](web/.snapshots/04-control-room-evidence.png)
+
+![Control Room Timeline](web/.snapshots/05-control-room-timeline.png)
+
+![Control Room CI Gate](web/.snapshots/06-control-room-ci-gate.png)
 
 Build verification:
 
@@ -245,7 +256,20 @@ Machine-readable verdict for CI and automation:
 
 ```json
 {
-  "overall_verdict": "PASS",
+  "metadata": {
+    "run_id": "pinzit_1714651200_123456789",
+    "generated_at": "1714651200",
+    "trace_file": "./examples/trace.json",
+    "config_file": "./examples/pinzit.toml",
+    "pinzit_version": "0.1.0"
+  },
+  "summary": {
+    "overall_verdict": "PASS",
+    "parsed_span_count": 182,
+    "failed_constraint_count": 0,
+    "critical_path_ms": 4312,
+    "max_propagation_hops_seen": 2
+  },
   "constraints": {
     "slfs_001": {
       "verdict": "PASS",
@@ -253,6 +277,25 @@ Machine-readable verdict for CI and automation:
       "evidence_spans": ["trace.span.signal_loss"],
       "recommendations": ["Block unsafe operations when telemetry age exceeds threshold."]
     }
+  },
+  "timeline": [
+    {
+      "timestamp_ns": 1000000000,
+      "span_id": "span_1",
+      "parent_span_id": null,
+      "name": "signal_loss_event",
+      "event_type": "root",
+      "severity": "critical",
+      "constraint_refs": []
+    }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "span_1", "label": "signal_loss_event", "kind": "service", "verdict": "PASS", "duration_ms": 100 }
+    ],
+    "edges": [
+      { "source": "span_1", "target": "span_2", "kind": "parent_child", "latency_ms": 50 }
+    ]
   }
 }
 ```
@@ -261,15 +304,81 @@ Constraint keys are sorted alphabetically (deterministic via `BTreeMap`).
 
 ### `pinzit_stats.csv`
 
-Flat metrics export. Currently writes:
+Flat metrics export:
 - `resource_span_markers`
 - `parsed_span_count`
 - `overall_verdict`
 
+### `pinzit_constraints.csv`
+
+Per-constraint metrics:
+- `constraint_id,verdict,metric,threshold,observed,evidence_count,recommendation_count`
+
 ### `pinzit_report.html`
 
-Human-readable, self-contained audit report including audit metadata, overall
-verdict, and per-constraint summary table.
+Human-readable, self-contained audit report including:
+- Executive summary with metadata and summary
+- Per-constraint detail table
+- Incident timeline table
+- Graph summary (nodes and edges)
+- CI gate block
+
+---
+
+## Data Flow
+
+```mermaid
+flowchart LR
+    A["OpenTelemetry Trace Export"] -->|read-only| B["Pinzit CLI"]
+    B --> C["pinzit_verdict.json"]
+    B --> D["pinzit_stats.csv"]
+    B --> E["pinzit_constraints.csv"]
+    B --> F["pinzit_report.html"]
+    C --> G["Web Control Room"]
+    D --> G
+    F --> H["CI / Audit / SRE"]
+```
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TB
+    subgraph Input
+        T["trace.json"]
+        C["pinzit.toml"]
+    end
+    subgraph Engine
+        CLI["CLI Parser"]
+        CFG["Config Loader"]
+        PARSER["Trace Parser"]
+        SLFS["SLFS-001 Evaluator"]
+        RTCB["RTCB-002 Evaluator"]
+        BRC["BRC-003 Evaluator"]
+    end
+    subgraph Output
+        JSON["JSON Writer"]
+        CSV["CSV Writers"]
+        HTML["HTML Writer"]
+    end
+    T --> PARSER
+    C --> CFG
+    CLI --> CFG
+    CLI --> PARSER
+    PARSER --> SLFS
+    PARSER --> RTCB
+    PARSER --> BRC
+    SLFS --> JSON
+    RTCB --> JSON
+    BRC --> JSON
+    SLFS --> CSV
+    RTCB --> CSV
+    BRC --> CSV
+    SLFS --> HTML
+    RTCB --> HTML
+    BRC --> HTML
+```
 
 ---
 
@@ -341,14 +450,14 @@ flowchart LR
 
 Near-term priorities, in order:
 
-1. **Richer HTML report** — Add per-constraint evidence details and causal
-   timelines.
-2. **Expanded CSV metrics** — Emit one row per constraint with threshold,
-   observed value, and verdict.
+1. ~~Richer HTML report~~ — Added executive summary, timeline, graph summary, and CI gate block.
+2. ~~Expanded CSV metrics~~ — Added `pinzit_constraints.csv` with per-constraint rows.
 3. **Robust JSON parsing** — Replace heuristic parsing with stricter OpenTelemetry
    JSON handling while keeping zero dependencies.
-4. **Test coverage expansion** — Cover `parse_args`, output writers, and broader
-   end-to-end cases.
+4. ~~Test coverage expansion~~ — Added tests for `parse_args`, invalid config, invalid JSON,
+   SLFS/RTCB/BRC boundary cases, and output writers.
+5. **Rust modularization** — Split `src/main.rs` into `cli.rs`, `config.rs`, `trace/`,
+   `constraints/`, and `report/` modules while preserving zero dependencies.
 
 ---
 
@@ -372,9 +481,13 @@ Pinzit is designed to demonstrate expertise in:
 ├── Cargo.lock              # Lockfile
 ├── src/
 │   └── main.rs             # Complete single-file application
+├── web/                    # Vite + React + TypeScript control room
 ├── examples/
 │   ├── trace.json          # Minimal OpenTelemetry trace
 │   └── pinzit.toml         # Full constraint configuration
+├── docs/
+│   └── product/
+│       └── QA_GPT_TASTE_GATE.md
 ├── .gitignore              # Ignores /target and /pinzit_out
 ├── README.md               # This file
 └── AGENTS.md               # AI agent development guide

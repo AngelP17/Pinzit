@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X } from '@phosphor-icons/react';
 import { useRunStore } from '../../store/run-store';
 import type { RunBundle } from '../../types/pinzit';
 import { DecisionTrace } from './DecisionTrace';
@@ -20,8 +20,8 @@ export function EvidenceDrawer({ run }: { run: RunBundle | null }) {
       className={`fixed right-0 top-0 z-40 h-full w-full max-w-xl transform border-l border-surface-600 bg-surface-900 p-4 shadow-panel transition-transform duration-300 ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
     >
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Evidence {target ? `• ${target}` : ''}</h3>
-        <button aria-label="Close evidence drawer" onClick={close} className="rounded-md border border-surface-600 p-1 focus-visible:ring-2 focus-visible:ring-blue-500"><X size={14} /></button>
+        <h3 className="text-lg font-semibold">Evidence {target ? `— ${target}` : ''}</h3>
+        <button aria-label="Close evidence drawer" onClick={close} className="rounded-md border border-surface-600 p-1 focus-visible:ring-2 focus-visible:ring-blue-500"><X size={14} weight="bold" /></button>
       </div>
       {!result ? (
         <p className="mt-4 text-sm text-zinc-400">Select a finding to inspect its decision inputs.</p>

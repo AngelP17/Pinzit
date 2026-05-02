@@ -1,6 +1,6 @@
 import { Suspense, lazy, useRef } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, Github } from 'lucide-react';
+import { ArrowRight, GithubLogo } from '@phosphor-icons/react';
 import { ConsolePreview } from './ConsolePreview';
 import heroAtmosphere from '../../assets/hero/hero-atmosphere.svg';
 
@@ -70,7 +70,7 @@ export function HeroSection({ onLaunch }: { onLaunch: () => void }) {
                 className="rounded-md border border-white/25 px-3 py-1.5 text-xs text-zinc-100 transition-colors hover:border-white/45 focus-visible:ring-2 focus-visible:ring-blue-500"
               >
                 <span className="inline-flex items-center gap-1">
-                  <Github size={12} /> GitHub
+                  <GithubLogo size={12} weight="duotone" /> GitHub
                 </span>
               </a>
               <button
@@ -138,7 +138,7 @@ export function HeroSection({ onLaunch }: { onLaunch: () => void }) {
               onClick={onLaunch}
               className="inline-flex items-center gap-2 rounded-md border border-white/70 bg-white px-5 py-3 text-sm font-semibold text-[#102a43] shadow-[0_8px_24px_rgba(255,255,255,0.18)] transition hover:bg-white/90 focus-visible:ring-2 focus-visible:ring-blue-500"
             >
-              Launch Control Room <ArrowRight size={16} />
+              Launch Control Room <ArrowRight size={16} weight="duotone" />
             </button>
             <a
               href="#how-it-works"
