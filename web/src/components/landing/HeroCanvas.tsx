@@ -3,38 +3,37 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Points, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
-function ParticleCloud({ reduceMotion }: { reduceMotion: boolean }) {
+function ParticleField({ reduceMotion }: { reduceMotion: boolean }) {
   const ref = useRef<THREE.Points>(null);
   const points = useMemo(() => {
-    const arr = new Float32Array(900 * 3);
-    for (let i = 0; i < 900; i += 1) {
-      arr[i * 3 + 0] = (Math.random() - 0.5) * 20;
-      arr[i * 3 + 1] = (Math.random() - 0.5) * 12;
-      arr[i * 3 + 2] = (Math.random() - 0.5) * 10;
+    const count = 720;
+    const arr = new Float32Array(count * 3);
+    for (let i = 0; i < count; i += 1) {
+      // Wider horizontal spread, flatter vertical for editorial feel
+      arr[i * 3 + 0] = (Math.random() - 0.5) * 28;
+      arr[i * 3 + 1] = (Math.random() - 0.5) * 14;
+      arr[i * 3 + 2] = (Math.random() - 0.5) * 8;
     }
     return arr;
   }, []);
 
   useFrame((state) => {
-    if (!ref.current) return;
-    if (reduceMotion) return;
-    ref.current.rotation.y = state.clock.elapsedTime * 0.011;
-    ref.current.rotation.x = state.clock.elapsedTime * 0.004;
+    if (!ref.current || reduceMotion) return;
+    ref.current.rotation.y = state.clock.elapsedTime * 0.008;
+    ref.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.12) * 0.02;
   });
 
   return (
-    <group>
-      <Points ref={ref} positions={points} stride={3} frustumCulled>
-        <PointMaterial
-          transparent
-          color="#d5e7f6"
-          size={0.038}
-          sizeAttenuation
-          depthWrite={false}
-          opacity={0.34}
-        />
-      </Points>
-    </group>
+    <Points ref={ref} positions={points} stride={3} frustumCulled>
+      <PointMaterial
+        transparent
+        color="#f5f1e8"
+        size={0.022}
+        sizeAttenuation
+        depthWrite={false}
+        opacity={0.22}
+      />
+    </Points>
   );
 }
 
@@ -42,10 +41,7 @@ function isWebGLAvailable() {
   if (typeof window === 'undefined') return false;
   try {
     const canvas = document.createElement('canvas');
-    return !!(
-      window.WebGLRenderingContext &&
-      (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
-    );
+    return !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
   } catch {
     return false;
   }
@@ -78,7 +74,7 @@ export default function HeroCanvas() {
   return (
     <div className="pointer-events-none absolute inset-0 -z-10">
       <Canvas
-        camera={{ position: [0, 0, 7], fov: 58 }}
+        camera={{ position: [0, 0, 8], fov: 55 }}
         dpr={[1, 1.2]}
         gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }}
         onCreated={({ gl }) => {
@@ -88,12 +84,12 @@ export default function HeroCanvas() {
               event.preventDefault();
               setDisabled(true);
             },
-            false
+            false,
           );
         }}
       >
-        <ambientLight intensity={0.28} />
-        <ParticleCloud reduceMotion={reduceMotion} />
+        <ambientLight intensity={0.18} />
+        <ParticleField reduceMotion={reduceMotion} />
       </Canvas>
     </div>
   );

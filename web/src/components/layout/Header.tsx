@@ -2,7 +2,7 @@ import {
   ArrowLeft,
   ArrowsLeftRight,
   Compass,
-  Download,
+  DownloadSimple,
   Keyboard,
   ShieldCheck,
   Target,
@@ -14,78 +14,80 @@ export function Header({ onBack }: { onBack?: () => void }) {
   const run = useRunStore((s) => s.primaryRun);
   const setPaletteOpen = useRunStore((s) => s.setPaletteOpen);
   const setCompareModalOpen = useRunStore((s) => s.setCompareModalOpen);
+  const viewMode = useRunStore((s) => s.viewMode);
   const setViewMode = useRunStore((s) => s.setViewMode);
 
   return (
-    <header className="panel mb-4 flex flex-wrap items-center justify-between gap-3 p-4">
-      <div>
-        {onBack ? (
-          <button
-            aria-label="Back to landing page"
-            onClick={onBack}
-            className="mb-2 inline-flex items-center gap-1 rounded-lg border border-surface-600 px-2.5 py-1 text-xs text-zinc-300 hover:border-surface-500 focus-visible:ring-2 focus-visible:ring-blue-500"
-          >
-            <ArrowLeft size={12} weight="bold" /> Back
-          </button>
-        ) : null}
-        <div className="inline-flex items-center gap-3">
-          <img src="/LOGO.PNG" alt="Pinzit logo" className="h-9 w-9 rounded-md border border-surface-600 object-cover" />
+    <header className="rule-b mb-7 pb-6">
+      <div className="flex flex-wrap items-center justify-between gap-y-4">
+        <div className="flex items-center gap-5">
+          {onBack ? (
+            <button
+              onClick={onBack}
+              aria-label="Back to landing page"
+              className="grid h-9 w-9 place-items-center rounded-full border border-white/10 text-ink-1 transition-colors hover:border-white/30 hover:text-white"
+            >
+              <ArrowLeft size={14} weight="bold" />
+            </button>
+          ) : null}
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Pinzit Control Room</h1>
-            <p className="text-sm text-zinc-400">Client-only reliability audit dashboard</p>
+            <p className="font-mono text-[11px] tracking-[0.22em] text-ink-2">PINZIT · CONTROL ROOM</p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-white">
+              Reliability verdict workspace
+            </h1>
           </div>
         </div>
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          onClick={() => setViewMode('audit')}
-          className="inline-flex items-center gap-1 rounded-lg border border-surface-600 px-3 py-1.5 text-sm hover:border-pass/70 focus-visible:ring-2 focus-visible:ring-blue-500"
-        >
-          <ShieldCheck size={14} weight="duotone" /> Audit
-        </button>
-        <button
-          onClick={() => setViewMode('explore')}
-          className="inline-flex items-center gap-1 rounded-lg border border-surface-600 px-3 py-1.5 text-sm hover:border-pass/70 focus-visible:ring-2 focus-visible:ring-blue-500"
-        >
-          <Compass size={14} weight="duotone" /> Explore
-        </button>
-        <button
-          onClick={() => setViewMode('focus')}
-          className="inline-flex items-center gap-1 rounded-lg border border-surface-600 px-3 py-1.5 text-sm hover:border-pass/70 focus-visible:ring-2 focus-visible:ring-blue-500"
-        >
-          <Target size={14} weight="duotone" /> Focus
-        </button>
-        <button
-          aria-label="Open command palette"
-          onClick={() => setPaletteOpen(true)}
-          className="inline-flex items-center gap-1 rounded-lg border border-surface-600 px-3 py-1.5 text-sm hover:border-surface-500 focus-visible:ring-2 focus-visible:ring-blue-500"
-        >
-          <Keyboard size={14} weight="duotone" /> Cmd+K
-        </button>
-        <button
-          aria-label="Open compare run modal"
-          onClick={() => setCompareModalOpen(true)}
-          className="inline-flex items-center gap-1 rounded-lg border border-surface-600 px-3 py-1.5 text-sm hover:border-surface-500 focus-visible:ring-2 focus-visible:ring-blue-500"
-        >
-          <ArrowsLeftRight size={14} weight="duotone" /> Compare Run
-        </button>
-        <button
-          aria-label="Export verdict JSON"
-          disabled={!run}
-          onClick={() => run && exportJSON(run.verdict)}
-          className="inline-flex items-center gap-1 rounded-lg border border-surface-600 px-3 py-1.5 text-sm disabled:opacity-40 hover:border-surface-500 focus-visible:ring-2 focus-visible:ring-blue-500"
-        >
-          <Download size={14} weight="duotone" /> JSON {run ? <span className="rounded bg-pass/20 px-1 text-[10px] text-pass">READY</span> : null}
-        </button>
-        <button
-          aria-label="Export stats CSV"
-          disabled={!run}
-          onClick={() => run && exportCSV(run.csvRows)}
-          className="inline-flex items-center gap-1 rounded-lg border border-surface-600 px-3 py-1.5 text-sm disabled:opacity-40 hover:border-surface-500 focus-visible:ring-2 focus-visible:ring-blue-500"
-        >
-          <Download size={14} weight="duotone" /> CSV {run ? <span className="rounded bg-pass/20 px-1 text-[10px] text-pass">READY</span> : null}
-        </button>
+
+        <div className="flex items-center gap-2">
+          <ModeButton active={viewMode === 'audit'}   onClick={() => setViewMode('audit')}   icon={<ShieldCheck size={13} weight="bold" />} label="Audit" />
+          <ModeButton active={viewMode === 'explore'} onClick={() => setViewMode('explore')} icon={<Compass size={13} weight="bold" />}     label="Explore" />
+          <ModeButton active={viewMode === 'focus'}   onClick={() => setViewMode('focus')}   icon={<Target size={13} weight="bold" />}      label="Focus" />
+          <span className="mx-1 h-5 w-px bg-white/10" />
+          <ToolButton onClick={() => setPaletteOpen(true)} icon={<Keyboard size={13} weight="bold" />} label="Cmd+K" />
+          <ToolButton onClick={() => setCompareModalOpen(true)} icon={<ArrowsLeftRight size={13} weight="bold" />} label="Compare" />
+          <span className="mx-1 h-5 w-px bg-white/10" />
+          <ExportButton disabled={!run} onClick={() => run && exportJSON(run.verdict)} label="JSON" />
+          <ExportButton disabled={!run} onClick={() => run && exportCSV(run.csvRows)}  label="CSV" />
+        </div>
       </div>
     </header>
+  );
+}
+
+function ModeButton({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] transition-colors ${
+        active
+          ? 'bg-ink-0 text-paper-0'
+          : 'border border-white/10 text-ink-1 hover:border-white/30 hover:text-white'
+      }`}
+    >
+      {icon} {label}
+    </button>
+  );
+}
+
+function ToolButton({ onClick, icon, label }: { onClick: () => void; icon: React.ReactNode; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-[12px] text-ink-1 transition-colors hover:border-white/30 hover:text-white"
+    >
+      {icon} {label}
+    </button>
+  );
+}
+
+function ExportButton({ disabled, onClick, label }: { disabled?: boolean; onClick: () => void; label: string }) {
+  return (
+    <button
+      disabled={disabled}
+      onClick={onClick}
+      className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-[12px] text-ink-1 transition-colors hover:border-white/30 hover:text-white disabled:opacity-40"
+    >
+      <DownloadSimple size={13} weight="bold" /> {label}
+    </button>
   );
 }

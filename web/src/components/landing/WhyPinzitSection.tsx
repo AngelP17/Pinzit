@@ -1,66 +1,62 @@
 import { motion } from 'framer-motion';
-import { CheckCircle } from '@phosphor-icons/react';
 
-const differentiators = [
+const tenets = [
   {
-    title: 'Deterministic by design',
-    body: 'Same inputs always produce the same verdict and evidence trail, making audits reproducible and defensible.',
+    n: 'I',
+    title: 'Deterministic',
+    body: 'Same inputs, same verdict, same evidence trail. Always.',
   },
   {
-    title: 'Client-only execution',
-    body: 'Trace artifacts stay on-device. No uploads, no server dependency, no exposure of sensitive telemetry.',
+    n: 'II',
+    title: 'Local-only',
+    body: 'No uploads. No remote inference. The browser is the runtime.',
   },
   {
-    title: 'Constraint-native intelligence',
-    body: 'Built around SLFS-001, RTCB-002, and BRC-003 so teams can reason directly against reliability controls.',
+    n: 'III',
+    title: 'Constraint-native',
+    body: 'Built around SLFS, RTCB and BRC — not generic anomaly heuristics.',
   },
   {
-    title: 'Operator-speed UX',
-    body: 'Keyboard-first navigation, comparison mode, and export-ready outputs reduce time-to-decision during reviews.',
+    n: 'IV',
+    title: 'Auditor-grade',
+    body: 'Every decision exports as JSON, CSV and HTML for review boards.',
   },
 ];
 
 export function WhyPinzitSection() {
   return (
-    <section id="architecture" className="mx-auto max-w-6xl px-6 py-16 md:px-12">
-      <div className="glass-panel rounded-2xl bg-gradient-to-br from-[#00f0ff]/12 via-transparent to-[#39ff14]/10 p-6 md:p-8">
-        <p className="text-xs uppercase tracking-[0.2em] text-[#00f0ff]">What Pinzit Is</p>
-        <h3 className="mt-3 font-display text-3xl text-white md:text-4xl">
-          Pinzit is a trace-native reliability verdict engine for modern delivery teams.
-        </h3>
-        <p className="mt-4 max-w-3xl text-zinc-300">
-          It transforms OpenTelemetry trace artifacts into PASS/FAIL/SKIPPED decisions with
-          linked evidence, then presents everything in an interactive control room that is fast,
-          explainable, and safe for production workflows.
-        </p>
-
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {differentiators.map((item, idx) => (
-            <motion.article
-              key={item.title}
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.06 }}
-              className="rounded-xl border border-white/12 bg-black/28 p-4"
-            >
-              <div className="flex items-start gap-2">
-                <CheckCircle size={16} weight="duotone" className="mt-0.5 text-[#39ff14]" />
-                <div>
-                  <h4 className="text-sm font-semibold text-white">{item.title}</h4>
-                  <p className="mt-1 text-sm text-zinc-300">{item.body}</p>
-                </div>
-              </div>
-            </motion.article>
-          ))}
+    <section id="security" className="mx-auto max-w-6xl px-6 py-32 md:px-10 md:py-44">
+      <div className="grid grid-cols-12 gap-x-10 gap-y-12">
+        <div className="col-span-12 md:col-span-5">
+          <span className="eyebrow">Operating tenets</span>
+          <h2 className="display display-lg mt-4 text-white">
+            Reliability evidence that survives an audit room.
+          </h2>
+          <p className="lede mt-6">
+            Pinzit ships four non-negotiables. They shape every output, every
+            verdict, every byte of telemetry the tool ever touches.
+          </p>
         </div>
 
-        <div className="mt-8 rounded-xl border border-[#00f0ff]/25 bg-[#00f0ff]/10 p-4">
-          <p className="text-sm text-zinc-100">
-            Why this is the optimal solution: Pinzit balances strict reproducibility, zero-trust
-            data handling, and high operator throughput in one workflow, without adding backend
-            infrastructure or operational overhead.
-          </p>
+        <div className="col-span-12 md:col-span-7">
+          <ul>
+            {tenets.map((tenet, idx) => (
+              <motion.li
+                key={tenet.n}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-100px' }}
+                transition={{ delay: idx * 0.06, duration: 0.5 }}
+                className="grid grid-cols-12 gap-6 border-b border-white/10 py-6 last:border-b-0"
+              >
+                <span className="col-span-2 font-mono text-[12px] tracking-[0.18em] text-signal">{tenet.n}</span>
+                <div className="col-span-10">
+                  <h3 className="text-xl font-medium tracking-tight text-white">{tenet.title}</h3>
+                  <p className="mt-1.5 max-w-xl text-[14.5px] leading-relaxed text-ink-1">{tenet.body}</p>
+                </div>
+              </motion.li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>

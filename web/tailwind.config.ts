@@ -5,56 +5,69 @@ export default {
   theme: {
     extend: {
       colors: {
-        hero: {
-          sky: {
-            deep: '#071426',
-            mid: '#102a43',
-          },
+        paper: {
+          0: '#0c1118',
+          1: '#11171f',
+          2: '#161d27',
+          3: '#1c2532',
         },
+        ink: {
+          0: '#f5f1e8',
+          1: '#d6d2c4',
+          2: '#8b8576',
+        },
+        signal: {
+          DEFAULT: '#f5b04a',
+          soft: 'rgba(245,176,74,0.18)',
+          line: 'rgba(245,176,74,0.45)',
+        },
+        // verdict semantics (kept restrained, not used as brand)
+        pass: '#6dd58c',
+        fail: '#ff6a6a',
+        skip: '#f5b04a',
+        // legacy aliases referenced by older components
         surface: {
-          900: '#0a0a0b',
-          800: '#141416',
-          700: '#1a1a1e',
-          600: '#26262b',
+          900: '#0c1118',
+          800: '#11171f',
+          700: '#161d27',
+          600: 'rgba(245,241,232,0.10)',
         },
-        pass: '#22c55e',
-        fail: '#ef4444',
-        skip: '#f59e0b',
-      },
-      boxShadow: {
-        panel: '0 10px 30px rgba(0,0,0,0.35)',
+        hero: {
+          sky: { deep: '#0c1118', mid: '#11171f' },
+        },
       },
       fontFamily: {
         display: ['"Geist"', '"IBM Plex Sans"', 'system-ui', 'sans-serif'],
-        sans: ['"Geist"', '"IBM Plex Sans"', '"Avenir Next"', 'system-ui', 'sans-serif'],
+        sans: ['"Geist"', '"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+        mono: ['"Geist Mono"', '"JetBrains Mono"', 'ui-monospace', 'monospace'],
+      },
+      boxShadow: {
+        panel: '0 18px 48px -16px rgba(0,0,0,0.55)',
+        glow: '0 0 0 1px rgba(245,176,74,0.45), 0 12px 30px -10px rgba(245,176,74,0.35)',
       },
       keyframes: {
+        marquee: {
+          '0%':  { transform: 'translateX(0)' },
+          '100%':{ transform: 'translateX(-50%)' },
+        },
         pulseSoft: {
           '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.72' },
-        },
-        marquee: {
-          '0%': { transform: 'translateX(0)' },
-          '100%': { transform: 'translateX(-50%)' },
+          '50%':      { opacity: '0.72' },
         },
         fadeUp: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '0%':   { opacity: '0', transform: 'translateY(16px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
-        dash: {
-          '0%': { strokeDashoffset: '500' },
-          '100%': { strokeDashoffset: '0' },
-        },
-        heroFloat: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-8px)' },
+        sweepLine: {
+          '0%':   { transform: 'scaleX(0)' },
+          '100%': { transform: 'scaleX(1)' },
         },
       },
       animation: {
-        pulseSoft: 'pulseSoft 1.8s ease-in-out infinite',
-        marquee: 'marquee 20s linear infinite',
-        fadeUp: 'fadeUp .7s ease forwards',
-        heroFloat: 'heroFloat 10s ease-in-out infinite',
+        marquee:    'marquee 38s linear infinite',
+        pulseSoft:  'pulseSoft 1.8s ease-in-out infinite',
+        fadeUp:     'fadeUp .7s ease forwards',
+        sweepLine:  'sweepLine .9s ease-out forwards',
       },
     },
   },

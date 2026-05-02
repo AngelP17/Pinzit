@@ -12,17 +12,30 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
   useSmoothScroll();
 
   return (
-    <div className="landing-root text-zinc-100">
+    <main className="landing-root w-full overflow-x-hidden text-ink-0">
+      {/* Attention */}
       <HeroSection onLaunch={onLaunch} />
-      <div className="landing-content">
-        <HowItWorksSection />
-        <ShowcaseSection onLaunch={onLaunch} />
-        <SealedSection />
-        <WhyPinzitSection />
-        <FeaturesGrid />
-        <ZeroTrustSection />
-        <FinalCTA onLaunch={onLaunch} />
-      </div>
-    </div>
+
+      {/* Light divider — trusted-by marquee */}
+      <ZeroTrustSection />
+
+      {/* Interest 1 — manifest */}
+      <HowItWorksSection />
+
+      {/* Interest 2 — bento manifest, the visual centerpiece */}
+      <FeaturesGrid />
+
+      {/* Desire — pinned evidence scroll */}
+      <ShowcaseSection onLaunch={onLaunch} />
+
+      {/* Editorial pause — operating premise */}
+      <SealedSection />
+
+      {/* Tenets — security/operating */}
+      <WhyPinzitSection />
+
+      {/* Action */}
+      <FinalCTA onLaunch={onLaunch} />
+    </main>
   );
 }

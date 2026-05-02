@@ -1,6 +1,6 @@
-import type { RunBundle } from '../../types/pinzit';
-import { Copy, Check, Terminal, FileText, FileCsv, FileHtml } from '@phosphor-icons/react';
 import { useState } from 'react';
+import { Check, Copy } from '@phosphor-icons/react';
+import type { RunBundle } from '../../types/pinzit';
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -12,13 +12,13 @@ function CopyButton({ text }: { text: string }) {
           setCopied(true);
           setTimeout(() => setCopied(false), 1500);
         } catch {
-          // ignore
+          /* ignore */
         }
       }}
-      className="inline-flex items-center gap-1 rounded-md border border-surface-600 px-2 py-1 text-xs hover:border-pass focus-visible:ring-2 focus-visible:ring-blue-500"
+      className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-2.5 py-1 font-mono text-[11px] text-ink-1 transition-colors hover:border-white/30 hover:text-white"
     >
-      {copied ? <Check size={12} weight="bold" className="text-pass" /> : <Copy size={12} weight="duotone" />}
-      {copied ? 'Copied' : 'Copy'}
+      {copied ? <Check size={11} weight="bold" className="text-pass" /> : <Copy size={11} weight="bold" />}
+      {copied ? 'COPIED' : 'COPY'}
     </button>
   );
 }
@@ -26,16 +26,21 @@ function CopyButton({ text }: { text: string }) {
 export function CIGatePanel({ run }: { run: RunBundle | null }) {
   const verdict = run?.verdict.overall_verdict ?? 'UNKNOWN';
   const exitCode = verdict === 'PASS' ? 0 : verdict === 'FAIL' ? 1 : 2;
+  const tone = verdict === 'PASS' ? 'text-pass' : verdict === 'FAIL' ? 'text-fail' : 'text-skip';
+
+  const failedConstraints = run
+    ? Object.entries(run.verdict.constraints)
+        .filter(([, v]) => v.verdict === 'FAIL')
+        .map(([k]) => `- ${k}`)
+        .join('\n') || '- None'
+    : '- None';
 
   const prSummary = `## Pinzit Reliability Verdict: ${verdict}
 
 Exit code: ${exitCode}
 
 Failed constraints:
-${run ? Object.entries(run.verdict.constraints)
-  .filter(([, v]) => v.verdict === 'FAIL')
-  .map(([k]) => `- ${k}`)
-  .join('\n') || '- None' : '- None'}
+${failedConstraints}
 
 Artifacts:
 - pinzit_verdict.json
@@ -68,62 +73,67 @@ jobs:
 `;
 
   return (
-    <div className="space-y-[var(--density-gap)]">
-      <div className="tab-header">
+    <div className="space-y-7">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-5">
         <div>
-          <h2 className="tab-title">CI Gate</h2>
-          <p className="tab-subtitle">Exit code preview, GitHub Actions snippet, and copyable PR summary.</p>
+          <span className="font-mono text-[11px] tracking-[0.22em] text-ink-2">CI GATE</span>
+          <h2 className="mt-1.5 text-2xl font-semibold tracking-tight text-white">
+            Decision surface — exit code, PR summary, workflow
+          </h2>
+          <p className="mt-1 text-sm text-ink-1">Copyable artifacts ready for your delivery pipeline.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="panel p-5">
-          <div className="flex items-center gap-2">
-            <Terminal size={18} weight="duotone" className="text-[#00f0ff]" />
-            <h3 className="text-sm font-semibold text-white">Exit Code</h3>
-          </div>
-          <p className="mt-3 text-4xl font-bold text-white">{exitCode}</p>
-          <p className={`mt-1 text-sm ${exitCode === 0 ? 'text-pass' : exitCode === 1 ? 'text-fail' : 'text-skip'}`}>
-            {exitCode === 0 ? 'PASS — All constraints satisfied' : exitCode === 1 ? 'FAIL — One or more constraints violated' : 'ERROR — Config or parse issue'}
+      <div className="grid grid-cols-12 gap-5">
+        {/* Exit code — editorial banner */}
+        <section className="surface col-span-12 p-7 lg:col-span-4">
+          <span className="font-mono text-[11px] tracking-[0.22em] text-ink-2">EXIT CODE</span>
+          <p className={`display display-mega mt-3 ${tone}`}>{exitCode}</p>
+          <p className={`mt-3 text-sm ${tone}`}>
+            {exitCode === 0 && 'PASS — All constraints satisfied'}
+            {exitCode === 1 && 'FAIL — One or more constraints violated'}
+            {exitCode === 2 && 'ERROR — Config or parse issue'}
           </p>
-        </div>
+          <p className="mt-6 border-t border-white/10 pt-4 text-[12.5px] text-ink-1">
+            Pinzit emits exit codes suitable for use as a CI gate. No backend, no orchestration.
+          </p>
+        </section>
 
-        <div className="panel p-5 lg:col-span-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FileText size={18} weight="duotone" className="text-[#00f0ff]" />
-              <h3 className="text-sm font-semibold text-white">PR Summary</h3>
-            </div>
+        {/* PR Summary */}
+        <section className="surface col-span-12 p-6 lg:col-span-8">
+          <div className="flex items-baseline justify-between border-b border-white/10 pb-3">
+            <span className="font-mono text-[11px] tracking-[0.22em] text-ink-2">PR SUMMARY</span>
             <CopyButton text={prSummary} />
           </div>
-          <pre className="mt-3 max-h-40 overflow-auto rounded-lg bg-surface-900 p-3 text-xs text-zinc-300">{prSummary}</pre>
-        </div>
-      </div>
+          <pre className="mt-4 max-h-56 overflow-auto rounded-lg bg-paper-2 p-4 font-mono text-[12.5px] leading-relaxed text-ink-1">
+{prSummary}
+          </pre>
+        </section>
 
-      <div className="panel p-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Terminal size={18} weight="duotone" className="text-[#00f0ff]" />
-            <h3 className="text-sm font-semibold text-white">GitHub Actions Workflow</h3>
+        {/* Workflow */}
+        <section className="surface col-span-12 p-6">
+          <div className="flex items-baseline justify-between border-b border-white/10 pb-3">
+            <span className="font-mono text-[11px] tracking-[0.22em] text-ink-2">GITHUB ACTIONS WORKFLOW</span>
+            <CopyButton text={workflowYaml} />
           </div>
-          <CopyButton text={workflowYaml} />
-        </div>
-        <pre className="mt-3 max-h-64 overflow-auto rounded-lg bg-surface-900 p-3 text-xs text-zinc-300">{workflowYaml}</pre>
-      </div>
+          <pre className="mt-4 max-h-72 overflow-auto rounded-lg bg-paper-2 p-4 font-mono text-[12.5px] leading-relaxed text-ink-1">
+{workflowYaml}
+          </pre>
+        </section>
 
-      <div className="panel p-5">
-        <h3 className="text-sm font-semibold text-white">Artifacts</h3>
-        <div className="mt-3 flex flex-wrap gap-3">
-          <div className="inline-flex items-center gap-2 rounded-lg border border-surface-600 px-3 py-2 text-xs text-zinc-300">
-            <FileText size={14} weight="duotone" /> pinzit_verdict.json
-          </div>
-          <div className="inline-flex items-center gap-2 rounded-lg border border-surface-600 px-3 py-2 text-xs text-zinc-300">
-            <FileCsv size={14} weight="duotone" /> pinzit_stats.csv
-          </div>
-          <div className="inline-flex items-center gap-2 rounded-lg border border-surface-600 px-3 py-2 text-xs text-zinc-300">
-            <FileHtml size={14} weight="duotone" /> pinzit_report.html
-          </div>
-        </div>
+        {/* Artifacts */}
+        <section className="surface col-span-12 grid grid-cols-3 gap-px bg-white/5">
+          {[
+            { label: 'pinzit_verdict.json', tag: 'JSON' },
+            { label: 'pinzit_stats.csv', tag: 'CSV' },
+            { label: 'pinzit_report.html', tag: 'HTML' },
+          ].map((a) => (
+            <div key={a.label} className="bg-paper-1 px-5 py-4">
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-2">{a.tag}</p>
+              <p className="mt-1 font-mono text-[12.5px] text-white break-all">{a.label}</p>
+            </div>
+          ))}
+        </section>
       </div>
     </div>
   );

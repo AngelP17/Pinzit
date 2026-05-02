@@ -3,3 +3,7 @@
 web/node_modules
 web/dist
 .DS_Store
+node_modules
+
+# Local screenshots from manual captures (not the curated /web/.snapshots ones)
+/Screenshot*.png

@@ -1,13 +1,15 @@
-import { VerdictBadge } from '../shared/VerdictBadge';
 import type { VerdictState } from '../../types/pinzit';
 
+/* Retained for backwards compatibility — the new OverviewTab renders an inline editorial banner. */
 export function VerdictBanner({ verdict }: { verdict: VerdictState }) {
-  const cls = verdict === 'FAIL' ? 'text-fail animate-pulseSoft' : verdict === 'PASS' ? 'text-pass' : 'text-skip';
+  const cls =
+    verdict === 'FAIL' ? 'text-fail' :
+    verdict === 'PASS' ? 'text-pass' :
+    'text-skip';
   return (
-    <div className="panel p-6 text-center">
-      <p className="text-xs uppercase tracking-widest text-zinc-400">Overall Verdict</p>
-      <h2 className={`mt-1 text-4xl font-black ${cls}`}>{verdict}</h2>
-      <div className="mt-2"><VerdictBadge verdict={verdict} /></div>
+    <div className="surface p-7">
+      <p className="font-mono text-[11px] tracking-[0.22em] text-ink-2">OVERALL VERDICT</p>
+      <p className={`display display-xl mt-2 ${cls}`}>{verdict}</p>
     </div>
   );
 }

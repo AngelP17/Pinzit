@@ -14,19 +14,28 @@ export function TabBar() {
   const setActiveTab = useRunStore((s) => s.setActiveTab);
 
   return (
-    <nav className="panel mb-4 flex gap-2 p-2">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => setActiveTab(tab.id)}
-          className={cn(
-            'cursor-pointer rounded-lg px-4 py-2 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-blue-500',
-            activeTab === tab.id ? 'bg-surface-700 text-white' : 'text-zinc-300 hover:bg-surface-700/40'
-          )}
-        >
-          {tab.label}
-        </button>
-      ))}
+    <nav className="rule-b mb-7 flex gap-7 pb-3">
+      {tabs.map((tab) => {
+        const active = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={cn(
+              'relative pb-2 text-[13px] tracking-tight transition-colors focus-visible:outline-none',
+              active ? 'text-white' : 'text-ink-2 hover:text-ink-1',
+            )}
+          >
+            {tab.label}
+            <span
+              className={cn(
+                'absolute -bottom-px left-0 right-0 h-px transition-colors',
+                active ? 'bg-signal' : 'bg-transparent',
+              )}
+            />
+          </button>
+        );
+      })}
     </nav>
   );
 }

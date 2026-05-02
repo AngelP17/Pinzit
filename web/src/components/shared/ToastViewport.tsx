@@ -4,9 +4,9 @@ import { useRunStore } from '../../store/run-store';
 type Tone = 'success' | 'error' | 'info';
 
 const toneClasses: Record<Tone, string> = {
-  success: 'border-pass/50 bg-pass/10 text-pass',
-  error: 'border-fail/50 bg-fail/10 text-fail',
-  info: 'border-surface-500 bg-surface-800 text-zinc-200',
+  success: 'border-pass/40 bg-paper-1 text-pass',
+  error:   'border-fail/40 bg-paper-1 text-fail',
+  info:    'border-white/15 bg-paper-1 text-ink-1',
 };
 
 export function ToastViewport() {
@@ -16,7 +16,7 @@ export function ToastViewport() {
   useEffect(() => {
     if (toasts.length === 0) return;
     const timers = toasts.map((toast) =>
-      window.setTimeout(() => removeToast(toast.id), toast.durationMs ?? 2600)
+      window.setTimeout(() => removeToast(toast.id), toast.durationMs ?? 2400),
     );
     return () => timers.forEach((timer) => window.clearTimeout(timer));
   }, [removeToast, toasts]);
@@ -24,14 +24,15 @@ export function ToastViewport() {
   return (
     <div
       aria-live="polite"
-      className="pointer-events-none fixed bottom-4 right-4 z-[70] flex w-full max-w-sm flex-col gap-2"
+      className="pointer-events-none fixed bottom-5 right-5 z-[70] flex w-full max-w-sm flex-col gap-2"
     >
       {toasts.map((toast) => (
         <div
           key={toast.id}
           role="status"
-          className={`pointer-events-auto rounded-lg border px-3 py-2 text-sm shadow-panel ${toneClasses[toast.tone]}`}
+          className={`pointer-events-auto rounded-full border px-4 py-2 font-mono text-[12px] tracking-tight shadow-panel ${toneClasses[toast.tone]}`}
         >
+          <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full align-middle bg-current" />
           {toast.message}
         </div>
       ))}

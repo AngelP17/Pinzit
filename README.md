@@ -130,31 +130,47 @@ npm run dev
 Then open the local URL printed by Vite (usually
 `http://127.0.0.1:5173/` or next available port).
 
-### Web Control Room + Landing v2
+### Web Control Room
 
-The `web/` app is fully client-side (no backend) and now ships with:
+The `web/` app is fully client-side (no backend) and ships with:
 
-- Cinematic landing hero with layered atmosphere, floating nav, and motion choreography
-- Interactive control room dashboard (Overview, Findings, Evidence, Timeline, CI Gate)
+- Editorial landing experience: floating glass-pill nav, cinematic two-line hero, gapless bento manifest, pinned-scroll evidence section
+- Interactive control room (Overview, Findings, Evidence, Timeline, CI Gate) with asymmetric bento layout
 - Compare-run modal for baseline vs current analysis
 - Strict file validation for `pinzit_verdict.json` + `pinzit_stats.csv`
-- Shared realistic mock-run generator powering landing live preview and sample loads
+- Shared realistic mock-run generator powering live preview and sample loads
 - Local persistence (`pinzit-ui-v1`) for active run, tab, filters, and view state
 - Build guard that fails if the main bundle exceeds `220KB`
 - Auto-loaded sample data on first visit so the dashboard is never empty
 - Artifact states: invalid, partial, parse error, schema mismatch, degraded canvas
 
+#### Landing — Hero (cinematic, 2-line iron rule)
+
 ![Landing Hero](web/.snapshots/01-landing-hero.png)
 
-![Control Room Overview](web/.snapshots/02-control-room-overview.png)
+#### Landing — Manifest bento (gapless, asymmetric, restrained accent)
 
-![Control Room Findings](web/.snapshots/03-control-room-findings.png)
+![Landing Manifest](web/.snapshots/02-landing-manifest.png)
 
-![Control Room Evidence](web/.snapshots/04-control-room-evidence.png)
+#### Control Room — Overview bento
 
-![Control Room Timeline](web/.snapshots/05-control-room-timeline.png)
+![Control Room Overview](web/.snapshots/03-control-room-overview.png)
 
-![Control Room CI Gate](web/.snapshots/06-control-room-ci-gate.png)
+#### Control Room — Findings (editorial list, not a spreadsheet)
+
+![Control Room Findings](web/.snapshots/04-control-room-findings.png)
+
+#### Control Room — Evidence (per-constraint cards)
+
+![Control Room Evidence](web/.snapshots/05-control-room-evidence.png)
+
+#### Control Room — Timeline (incident reconstruction)
+
+![Control Room Timeline](web/.snapshots/06-control-room-timeline.png)
+
+#### Control Room — CI Gate (decision surface)
+
+![Control Room CI Gate](web/.snapshots/07-control-room-ci-gate.png)
 
 Build verification:
 
@@ -162,6 +178,14 @@ Build verification:
 cd web
 npm run typecheck
 npm run build:guard
+```
+
+Refresh screenshots end-to-end (rebuilds, then captures via Playwright):
+
+```bash
+cd web
+npm run build
+node scripts/take-screenshots.mjs
 ```
 
 ---

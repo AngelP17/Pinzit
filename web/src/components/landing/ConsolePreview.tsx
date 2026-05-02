@@ -1,17 +1,10 @@
-import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { createPreviewPackets } from '../../lib/demo-mock';
 
 export function ConsolePreview() {
   const reduceMotion = useReducedMotion();
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-  const sx = useSpring(mx, { stiffness: 140, damping: 18 });
-  const sy = useSpring(my, { stiffness: 140, damping: 18 });
   const [activeIndex, setActiveIndex] = useState(0);
-
-  const rotateX = useTransform(sy, [-50, 50], [7, -7]);
-  const rotateY = useTransform(sx, [-50, 50], [-9, 9]);
 
   const packets = useMemo(() => createPreviewPackets(), []);
   const packet = packets[activeIndex];
@@ -20,94 +13,82 @@ export function ConsolePreview() {
     if (reduceMotion) return undefined;
     const timer = window.setInterval(() => {
       setActiveIndex((idx) => (idx + 1) % packets.length);
-    }, 3200);
+    }, 3600);
     return () => window.clearInterval(timer);
   }, [packets.length, reduceMotion]);
 
   if (!packet) return null;
 
   return (
-    <motion.div
-      style={reduceMotion ? {} : { rotateX, rotateY }}
-      onMouseMove={(e) => {
-        if (reduceMotion) return;
-        const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-        mx.set(e.clientX - (rect.left + rect.width / 2));
-        my.set(e.clientY - (rect.top + rect.height / 2));
-      }}
-      onMouseLeave={() => {
-        if (reduceMotion) return;
-        mx.set(0);
-        my.set(0);
-      }}
-      className="glass-panel relative max-w-3xl overflow-hidden rounded-2xl p-5 md:p-6"
-    >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(0,240,255,0.18),transparent_45%),radial-gradient(circle_at_90%_90%,rgba(57,255,20,0.08),transparent_45%)]" />
-      <div className="relative z-10">
-        <div className="mb-3 flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#39ff14]">Live Preview</p>
-          <p
-            className={`rounded-full border px-2 py-0.5 text-xs font-semibold ${
-              packet.verdict === 'PASS'
-                ? 'border-pass/50 bg-pass/20 text-pass'
-                : 'border-fail/50 bg-fail/20 text-fail'
-            }`}
-          >
-            {packet.verdict}
-          </p>
+    <div className="console-preview overflow-hidden">
+      {/* Window chrome */}
+      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span className="block h-2.5 w-2.5 rounded-full bg-fail/70" />
+          <span className="block h-2.5 w-2.5 rounded-full bg-skip/70" />
+          <span className="block h-2.5 w-2.5 rounded-full bg-pass/70" />
+          <span className="ml-3 text-[11px] uppercase tracking-[0.18em] text-ink-2">pinzit_verdict.json</span>
         </div>
-
-        <div className="grid grid-cols-2 gap-2 text-[11px] uppercase tracking-[0.16em] text-zinc-400 md:grid-cols-4">
-          <div className="rounded-md border border-white/10 bg-white/5 px-2 py-1.5">
-            <span className="block text-[10px] text-zinc-500">Run</span>
-            <span className="mt-1 block font-mono text-zinc-200">{packet.runId.slice(0, 14)}</span>
-          </div>
-          <div className="rounded-md border border-white/10 bg-white/5 px-2 py-1.5">
-            <span className="block text-[10px] text-zinc-500">Env</span>
-            <span className="mt-1 block font-mono text-zinc-200">{packet.environment}</span>
-          </div>
-          <div className="rounded-md border border-white/10 bg-white/5 px-2 py-1.5">
-            <span className="block text-[10px] text-zinc-500">Latency</span>
-            <span className="mt-1 block font-mono text-zinc-200">{packet.latencyMs}ms</span>
-          </div>
-          <div className="rounded-md border border-white/10 bg-white/5 px-2 py-1.5">
-            <span className="block text-[10px] text-zinc-500">Verdict</span>
-            <span className="mt-1 block font-mono text-zinc-200">{packet.verdict}</span>
-          </div>
-        </div>
+        <span
+          className={`rounded-full border px-2.5 py-0.5 font-mono text-[10px] tracking-[0.18em] ${
+            packet.verdict === 'PASS'
+              ? 'border-pass/40 bg-pass/10 text-pass'
+              : 'border-fail/40 bg-fail/10 text-fail'
+          }`}
+        >
+          {packet.verdict}
+        </span>
       </div>
 
-      <div className="relative z-10 mt-3 space-y-2 font-mono text-sm text-zinc-200">
+      {/* Metric strip */}
+      <div className="grid grid-cols-2 gap-px bg-white/5 sm:grid-cols-4">
+        <Metric label="Run" value={packet.runId.slice(0, 14)} />
+        <Metric label="Env" value={packet.environment} />
+        <Metric label="Latency" value={`${packet.latencyMs}ms`} />
+        <Metric label="Spans" value={String(packet.spanCount)} />
+      </div>
+
+      {/* Live log */}
+      <div className="px-5 py-5">
         <AnimatePresence mode="wait">
           <motion.div
             key={packet.runId}
-            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 6 }}
             animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
-            exit={reduceMotion ? {} : { opacity: 0, y: -8 }}
-            transition={{ duration: 0.28 }}
-            className="space-y-2"
+            exit={reduceMotion ? {} : { opacity: 0, y: -6 }}
+            transition={{ duration: 0.32 }}
+            className="space-y-2 font-mono text-[12.5px] leading-relaxed text-ink-1"
           >
-            <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2">
-              run_id={packet.runId}
-            </div>
-            <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2">
-              profile={packet.profile} loaded_at="{packet.timestamp}"
-            </div>
-            <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2">
-              summary parsed_span_count={packet.spanCount} signal_loss_events={packet.signalLossEvents}{' '}
-              evidence_spans={packet.evidenceCount}
-            </div>
+            <Line>$ pinzit --trace ./trace.json --config ./pinzit.toml</Line>
+            <Line muted>loaded {packet.spanCount} spans · profile={packet.profile}</Line>
+            <Line muted>signal_loss_events={packet.signalLossEvents} · evidence_spans={packet.evidenceCount}</Line>
             {packet.lines.map((line) => (
-              <div
-                key={`${packet.runId}-${line}`}
-                className="rounded-md border border-white/10 bg-white/5 px-3 py-2"
-              >
-                {line}
-              </div>
+              <Line key={line}>{line}</Line>
             ))}
+            <div className="mt-3 border-t border-white/10 pt-3">
+              <Line accent>verdict={packet.verdict} · exit={packet.verdict === 'PASS' ? 0 : 1}</Line>
+            </div>
           </motion.div>
         </AnimatePresence>
       </div>
-    </motion.div>
+    </div>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-paper-2 px-4 py-3">
+      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-2">{label}</p>
+      <p className="mt-1 font-mono text-[12.5px] text-white">{value}</p>
+    </div>
+  );
+}
+
+function Line({ children, muted, accent }: { children: React.ReactNode; muted?: boolean; accent?: boolean }) {
+  return (
+    <p className={accent ? 'text-signal' : muted ? 'text-ink-2' : 'text-ink-1'}>
+      <span className="mr-2 select-none text-ink-2/60">›</span>
+      {children}
+    </p>
   );
 }
