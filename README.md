@@ -1,222 +1,81 @@
-# Pinzit — Trace-Native Reliability Intelligence
+# Pinzit
 
-> **SRE · Platform · Observability · Security**
->
-> Pinzit converts OpenTelemetry traces into **incident timelines, compliance
-> verdicts, and deterministic recommended actions** — producing CI-ready
-> artifacts and auditor-grade reports **without executing, orchestrating, or
-> mutating runtime systems**.
+> Read-only reliability analysis for OpenTelemetry traces.
+> Zero dependencies. Deterministic verdicts. No side effects.
 
----
+Pinzit reads an OpenTelemetry JSON trace, evaluates it against three safety constraints, and writes CI-ready reports (HTML, JSON, CSV). It never calls a network, never mutates a runtime, and never hallucinates. Same inputs, same verdict, every time.
 
-## Project Status
-
-> **Alpha / Functional Evaluation Phase.**
-> The CLI, config system, std-only trace parsing, and output writers are
-> implemented. Built-in constraints now evaluate parsed spans and can return
-> `PASS` or `FAIL` based on trace content. The web UI includes Timeline and
-> CI Gate tabs, artifact states, and auto-loaded sample data. See [Roadmap](#roadmap)
-> for remaining quality and coverage improvements.
->
-> **Web UI included:** A client-only React control room now lives in
-> [`web/`](web), with a landing-first experience and interactive dashboard.
-
----
-
-## Why Pinzit Exists
-
-Modern systems already emit massive amounts of telemetry (OpenTelemetry,
-Datadog, Grafana). Incident-management platforms coordinate humans
-(PagerDuty, Rootly).
-
-**What's missing is judgment.**
-
-Pinzit lives in the gap between **telemetry** and **truth**.
-
-It answers questions that dashboards and runbooks don't:
-
-1. What actually failed first?
-2. How did the failure propagate?
-3. Did the system recover *within required bounds*?
-4. Which invariants were violated?
-5. What concrete changes would have prevented or mitigated the outcome?
-
-> **Pinzit does not act on systems. It evaluates them.**
-
----
-
-## What Pinzit Is
-
-| Capability |
-|------------|
-| **Read-only analysis engine** for distributed-systems telemetry |
-| **Causal graph reconstruction** from OpenTelemetry traces |
-| **Constraint-based verdicts** (`PASS` / `FAIL`) |
-| **Incident timeline reconstruction** |
-| **Static, deterministic recommendations** (auditor-safe) |
-| **Multi-format reporting**: HTML · JSON · CSV |
-| **CI-ready** (exit codes + machine-readable output) |
-
-## What Pinzit Is Not
-
-- Not an incident commander or on-call paging system
-- Not a runbook executor or auto-healer
-- Not a control plane or monitoring dashboard
-
-Pinzit has **no side effects**. It reads telemetry, produces evidence, and exits.
-
----
-
-## 30-Second Positioning
-
-> Telemetry tells you *what happened*.
-> Runbooks tell you *what to do*.
-> **Pinzit tells you whether the system behaved correctly — and why it didn't.**
-
----
-
-## Project Definition
-
-| Field       | Value                                    |
-|-------------|------------------------------------------|
-| **Name**    | `pinzit`                                 |
-| **Binary**  | `pinzit`                                 |
-| **Tagline** | Trace-Native Reliability Intelligence    |
-| **Type**    | Rust CLI (zero dependencies)             |
-| **Inputs**  | OpenTelemetry JSON trace + `pinzit.toml` |
-| **Outputs** | HTML · JSON · CSV                        |
-| **Exit**    | `0` = PASS · `1` = FAIL · `2` = error   |
-| **License** | MIT                                      |
-
----
+![Landing](web/.snapshots/01-landing-hero.png)
 
 ## Quick Start
 
-### Prerequisites
-
-- [Rust toolchain](https://rustup.rs/) (1.65+)
-
-### Install & Run
-
 ```bash
-# Clone and build
-git clone https://github.com/AngelP17/Pinzit.git
-cd Pinzit
+git clone https://github.com/AngelP17/Pinzit.git && cd Pinzit
 cargo build --release
-
-# Run with the included example
-cargo run -- \
-  --trace ./examples/trace.json \
-  --config ./examples/pinzit.toml \
-  --outdir ./pinzit_out \
-  --format html,json,csv
+cargo run -- --trace ./examples/trace.json --config ./examples/pinzit.toml --outdir ./pinzit_out
 ```
 
-### Install Globally
+### Web UI
 
 ```bash
-cargo install --path .
-pinzit --trace ./examples/trace.json
+cd web && npm install && npm run dev
 ```
 
-### Launch Web UI
+Client-only control room. No backend. Drop `pinzit_verdict.json` + `pinzit_stats.csv` to inspect verdicts, evidence spans, incident timeline, and CI gate.
+
+![Control Room](web/.snapshots/03-control-room-overview.png)
+
+## How It Works
+
+```mermaid
+flowchart LR
+    A["trace.json"] --> B["Pinzit CLI"]
+    C["pinzit.toml"] --> B
+    B --> D["pinzit_verdict.json"]
+    B --> E["pinzit_stats.csv"]
+    B --> F["pinzit_constraints.csv"]
+    B --> G["pinzit_report.html"]
+    D --> H["Web Control Room"]
+    E --> H
+    G --> I["CI / Audit"]
+```
+
+### Built-In Constraints
+
+| ID | Name | Checks |
+|----|------|--------|
+| SLFS-001 | Fail-Safe Fallback | No unsafe operation after telemetry loss before safe state |
+| RTCB-002 | Recovery Time Bound | System recovers within declared ceiling |
+| BRC-003 | Blast Radius Containment | Failure stays inside isolation boundary |
+
+Each constraint produces a binary verdict, quantitative metrics, evidence spans, and a deterministic recommendation.
+
+### Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | PASS |
+| `1` | FAIL |
+| `2` | Config or parse error |
+
+## CLI
 
 ```bash
-cd web
-npm install
-npm run dev
+pinzit --trace <path> [--config pinzit.toml] [--outdir ./pinzit_out] [--format html,json,csv] [--fail-fast] [--no-recommend]
 ```
 
-Then open the local URL printed by Vite (usually
-`http://127.0.0.1:5173/` or next available port).
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--trace` | required | Path to OpenTelemetry JSON trace |
+| `--config` | `pinzit.toml` | Path to configuration file |
+| `--outdir` | `./pinzit_out` | Output directory for reports |
+| `--format` | `html,json,csv` | Comma-separated output formats |
+| `--fail-fast` | `false` | Stop after first FAIL |
+| `--no-recommend` | `false` | Suppress recommendations |
 
-### Web Control Room
+## Configuration
 
-The `web/` app is fully client-side (no backend) and ships with:
-
-- Editorial landing experience: floating glass-pill nav, cinematic two-line hero, gapless bento manifest, pinned-scroll evidence section
-- Interactive control room (Overview, Findings, Evidence, Timeline, CI Gate) with asymmetric bento layout
-- Compare-run modal for baseline vs current analysis
-- Strict file validation for `pinzit_verdict.json` + `pinzit_stats.csv`
-- Shared realistic mock-run generator powering live preview and sample loads
-- Local persistence (`pinzit-ui-v1`) for active run, tab, filters, and view state
-- Build guard that fails if the main bundle exceeds `220KB`
-- Auto-loaded sample data on first visit so the dashboard is never empty
-- Artifact states: invalid, partial, parse error, schema mismatch, degraded canvas
-
-#### Landing — Hero (cinematic, 2-line iron rule)
-
-![Landing Hero](web/.snapshots/01-landing-hero.png)
-
-#### Landing — Manifest bento (gapless, asymmetric, restrained accent)
-
-![Landing Manifest](web/.snapshots/02-landing-manifest.png)
-
-#### Control Room — Overview bento
-
-![Control Room Overview](web/.snapshots/03-control-room-overview.png)
-
-#### Control Room — Findings (editorial list, not a spreadsheet)
-
-![Control Room Findings](web/.snapshots/04-control-room-findings.png)
-
-#### Control Room — Evidence (per-constraint cards)
-
-![Control Room Evidence](web/.snapshots/05-control-room-evidence.png)
-
-#### Control Room — Timeline (incident reconstruction)
-
-![Control Room Timeline](web/.snapshots/06-control-room-timeline.png)
-
-#### Control Room — CI Gate (decision surface)
-
-![Control Room CI Gate](web/.snapshots/07-control-room-ci-gate.png)
-
-Build verification:
-
-```bash
-cd web
-npm run typecheck
-npm run build:guard
-```
-
-Refresh screenshots end-to-end (rebuilds, then captures via Playwright):
-
-```bash
-cd web
-npm run build
-node scripts/take-screenshots.mjs
-```
-
----
-
-## CLI Usage
-
-```bash
-pinzit \
-  --trace ./trace.json \
-  [--config ./pinzit.toml] \
-  [--outdir ./pinzit_out] \
-  [--format html,json,csv] \
-  [--fail-fast] \
-  [--no-recommend]
-```
-
-| Flag             | Required | Default          | Description                        |
-|------------------|----------|------------------|------------------------------------|
-| `--trace`        | **Yes**  | —                | Path to OpenTelemetry JSON trace   |
-| `--config`       | No       | `pinzit.toml`    | Path to configuration file         |
-| `--outdir`       | No       | `./pinzit_out`   | Output directory for reports       |
-| `--format`       | No       | `html,json,csv`  | Comma-separated output formats     |
-| `--fail-fast`    | No       | `false`          | Exit on first violation            |
-| `--no-recommend` | No       | `false`          | Suppress recommendations in output |
-| `--help`, `-h`   | No       | —                | Show usage and exit                |
-
-> Exit codes are active: `0` = PASS, `1` = FAIL, `2` = config/parse error.
-
----
-
-## Configuration (`pinzit.toml`)
+See [`examples/pinzit.toml`](examples/pinzit.toml) for a complete file.
 
 ```toml
 [meta]
@@ -242,186 +101,7 @@ containment_timeout_ms = 2000
 isolation_boundary_attribute = "fault.isolation"
 ```
 
-See the full example at [`examples/pinzit.toml`](examples/pinzit.toml).
-
----
-
-## Built-In Constraints
-
-### SLFS-001 — Fail-Safe Fallback
-
-Ensures unsafe operations do not occur after telemetry loss unless a safe state
-is confirmed within the allowed window.
-
-### RTCB-002 — Recovery Time Bound
-
-Verifies the system reaches a stable state within a declared recovery ceiling.
-
-### BRC-003 — Blast Radius Containment
-
-Detects failures propagating beyond isolation boundaries or hop limits.
-
-Each constraint yields:
-
-- **Binary verdict** (`PASS` / `FAIL`)
-- **Quantitative metrics** (latency, thresholds, counts)
-- **Evidence spans** (trace references)
-- **Deterministic recommendations** (when enabled)
-
-Constraint verdicts are computed from parsed trace spans and config thresholds.
-
----
-
-## Outputs
-
-### `pinzit_verdict.json`
-
-Machine-readable verdict for CI and automation:
-
-```json
-{
-  "metadata": {
-    "run_id": "pinzit_1714651200_123456789",
-    "generated_at": "1714651200",
-    "trace_file": "./examples/trace.json",
-    "config_file": "./examples/pinzit.toml",
-    "pinzit_version": "0.1.0"
-  },
-  "summary": {
-    "overall_verdict": "PASS",
-    "parsed_span_count": 182,
-    "failed_constraint_count": 0,
-    "critical_path_ms": 4312,
-    "max_propagation_hops_seen": 2
-  },
-  "constraints": {
-    "slfs_001": {
-      "verdict": "PASS",
-      "metrics": { "signal_loss_timeout_ms": 500, "safe_state_deadline_ms": 250 },
-      "evidence_spans": ["trace.span.signal_loss"],
-      "recommendations": ["Block unsafe operations when telemetry age exceeds threshold."]
-    }
-  },
-  "timeline": [
-    {
-      "timestamp_ns": 1000000000,
-      "span_id": "span_1",
-      "parent_span_id": null,
-      "name": "signal_loss_event",
-      "event_type": "root",
-      "severity": "critical",
-      "constraint_refs": []
-    }
-  ],
-  "graph": {
-    "nodes": [
-      { "id": "span_1", "label": "signal_loss_event", "kind": "service", "verdict": "PASS", "duration_ms": 100 }
-    ],
-    "edges": [
-      { "source": "span_1", "target": "span_2", "kind": "parent_child", "latency_ms": 50 }
-    ]
-  }
-}
-```
-
-Constraint keys are sorted alphabetically (deterministic via `BTreeMap`).
-
-### `pinzit_stats.csv`
-
-Flat metrics export:
-- `resource_span_markers`
-- `parsed_span_count`
-- `overall_verdict`
-
-### `pinzit_constraints.csv`
-
-Per-constraint metrics:
-- `constraint_id,verdict,metric,threshold,observed,evidence_count,recommendation_count`
-
-### `pinzit_report.html`
-
-Human-readable, self-contained audit report including:
-- Executive summary with metadata and summary
-- Per-constraint detail table
-- Incident timeline table
-- Graph summary (nodes and edges)
-- CI gate block
-
----
-
-## Data Flow
-
-```mermaid
-flowchart LR
-    A["OpenTelemetry Trace Export"] -->|read-only| B["Pinzit CLI"]
-    B --> C["pinzit_verdict.json"]
-    B --> D["pinzit_stats.csv"]
-    B --> E["pinzit_constraints.csv"]
-    B --> F["pinzit_report.html"]
-    C --> G["Web Control Room"]
-    D --> G
-    F --> H["CI / Audit / SRE"]
-```
-
----
-
-## Architecture
-
-```mermaid
-flowchart TB
-    subgraph Input
-        T["trace.json"]
-        C["pinzit.toml"]
-    end
-    subgraph Engine
-        CLI["CLI Parser"]
-        CFG["Config Loader"]
-        PARSER["Trace Parser"]
-        SLFS["SLFS-001 Evaluator"]
-        RTCB["RTCB-002 Evaluator"]
-        BRC["BRC-003 Evaluator"]
-    end
-    subgraph Output
-        JSON["JSON Writer"]
-        CSV["CSV Writers"]
-        HTML["HTML Writer"]
-    end
-    T --> PARSER
-    C --> CFG
-    CLI --> CFG
-    CLI --> PARSER
-    PARSER --> SLFS
-    PARSER --> RTCB
-    PARSER --> BRC
-    SLFS --> JSON
-    RTCB --> JSON
-    BRC --> JSON
-    SLFS --> CSV
-    RTCB --> CSV
-    BRC --> CSV
-    SLFS --> HTML
-    RTCB --> HTML
-    BRC --> HTML
-```
-
----
-
-## Recommendations Engine
-
-Pinzit generates static, deterministic recommendations based on violation type.
-No LLMs, no network calls, no non-reproducible output.
-
-| Violation Type | Example Recommendation                                           |
-|----------------|------------------------------------------------------------------|
-| Fail-Safe      | Block unsafe operations when telemetry age exceeds threshold     |
-| Recovery       | Cap retry backoff, bound readiness checks, use progressive degradation |
-| Blast Radius   | Introduce bulkheads, isolate pools, limit fan-out               |
-
-Recommendations are advisory only. **Pinzit never executes changes.**
-
----
-
-## CI Integration (GitHub Actions)
+## CI Integration
 
 ```yaml
 name: Pinzit Verdict
@@ -444,122 +124,36 @@ jobs:
           path: ./pinzit_out/
 ```
 
-The process exits with code `0` (PASS) or `1` (FAIL), making it suitable as a
-CI gate.
-
----
-
-## Architecture Boundary
-
-| Concern        | Pinzit            | Control Planes |
-|----------------|-------------------|----------------|
-| Mode           | Read-only         | Runtime        |
-| Input          | Trace exports     | Live streams   |
-| Output         | Verdicts & reports | Actions       |
-| Side effects   | **None**          | Yes            |
-| CI suitability | High              | Low            |
-
-```mermaid
-flowchart LR
-    A["OpenTelemetry\nTrace Export"] -->|read-only| B["Pinzit\n(analyze)"]
-    B -->|verdicts & reports| C["CI / Audit / SRE\n(consume reports)"]
-    style B fill:#2d2d2d,stroke:#4ec9b0,color:#fff
-```
-
-> **No side effects · No network calls · No runtime mutation**
-
----
-
-## Roadmap
-
-Near-term priorities, in order:
-
-1. ~~Richer HTML report~~ — Added executive summary, timeline, graph summary, and CI gate block.
-2. ~~Expanded CSV metrics~~ — Added `pinzit_constraints.csv` with per-constraint rows.
-3. **Robust JSON parsing** — Replace heuristic parsing with stricter OpenTelemetry
-   JSON handling while keeping zero dependencies.
-4. ~~Test coverage expansion~~ — Added tests for `parse_args`, invalid config, invalid JSON,
-   SLFS/RTCB/BRC boundary cases, and output writers.
-5. **Rust modularization** — Split `src/main.rs` into `cli.rs`, `config.rs`, `trace/`,
-   `constraints/`, and `report/` modules while preserving zero dependencies.
-
----
-
-## Target Roles
-
-Pinzit is designed to demonstrate expertise in:
-
-- **Site Reliability Engineering** (SRE)
-- **Platform Engineering**
-- **Observability Engineering**
-- **Security Engineering** (detection / invariant enforcement)
-- **Reliability / Systems Architecture**
-
----
-
 ## Project Structure
 
 ```text
 .
-├── Cargo.toml              # Package manifest (v0.1.0, zero dependencies)
-├── Cargo.lock              # Lockfile
-├── src/
-│   └── main.rs             # Complete single-file application
+├── src/main.rs             # Single-file Rust application (zero dependencies)
 ├── web/                    # Vite + React + TypeScript control room
 ├── examples/
 │   ├── trace.json          # Minimal OpenTelemetry trace
 │   └── pinzit.toml         # Full constraint configuration
-├── docs/
-│   └── product/
-│       └── QA_GPT_TASTE_GATE.md
-├── .gitignore              # Ignores /target and /pinzit_out
-├── README.md               # This file
-└── AGENTS.md               # AI agent development guide
+├── AGENTS.md               # AI agent development guide
+└── README.md
 ```
-
----
 
 ## Development
 
 ```bash
-cargo build              # Debug build
-cargo build --release    # Release build
-cargo test               # Run all tests
-cargo test -- --nocapture  # Tests with stdout
-cargo fmt                # Format code
-cargo clippy             # Lint
+cargo build --release       # Build
+cargo test                  # Test (14 tests)
+cargo fmt --check           # Format check
+cargo clippy                # Lint
+cd web && npm run typecheck # Frontend types
+cd web && npm run build:guard # Frontend build (main chunk <= 220KB)
 ```
 
-See [`AGENTS.md`](AGENTS.md) for full development guidelines, code style
-conventions, architecture decisions, and contribution workflow.
+See [`AGENTS.md`](AGENTS.md) for full development guidelines.
 
----
+## Status
 
-## Contributing
-
-Pinzit follows a zero-external-dependencies policy. Before opening a pull
-request:
-
-1. Run `cargo test`, `cargo clippy`, and `cargo fmt --check` — all must pass
-   cleanly.
-2. Do not add entries to `[dependencies]` in `Cargo.toml` without discussion.
-3. New constraints must be documented in both `README.md` (Built-In Constraints
-   section) and `AGENTS.md` (Section 7).
-4. See [`AGENTS.md`](AGENTS.md) for the full development checklist.
-
----
+Alpha. CLI, config parsing, trace evaluation, and output writers are functional. All three constraints compute verdicts from trace content. Web UI includes Timeline and CI Gate tabs. See [Roadmap in AGENTS.md](AGENTS.md#14-known-limitations-and-todos) for remaining work.
 
 ## License
 
 MIT
-
----
-
-## Summary
-
-Pinzit is not another dashboard. It is not another control plane.
-
-It is a **judge** — converting telemetry into evidence, verdicts, and
-actionable insight.
-
-**Systems that can't be evaluated can't be trusted.**
