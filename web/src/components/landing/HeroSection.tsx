@@ -40,7 +40,7 @@ export function HeroSection({ onLaunch }: { onLaunch: () => void }) {
             </span>
             <span className="text-[13px] font-semibold tracking-tight">Pinzit</span>
             <span className="ml-2 hidden h-3 w-px bg-white/15 md:block" />
-            <span className="ml-2 hidden font-mono text-[10px] uppercase tracking-[0.18em] text-ink-2 md:block">v0.1.0</span>
+            <span className="ml-2 hidden h-3 w-px bg-white/15 md:block" />
           </div>
           <div className="hidden items-center gap-7 text-[13px] text-ink-1 md:flex">
             {navLinks.map((link) => (
@@ -134,7 +134,7 @@ export function HeroSection({ onLaunch }: { onLaunch: () => void }) {
           </a>
           <span className="ml-1 hidden items-center gap-2 text-[12px] text-ink-2 md:inline-flex">
             <span className="h-1.5 w-1.5 rounded-full bg-pass animate-pulseSoft" />
-            client-only · no uploads · zero trust
+            client-only, no uploads, zero trust
           </span>
         </motion.div>
 
@@ -145,7 +145,7 @@ export function HeroSection({ onLaunch }: { onLaunch: () => void }) {
           transition={{ duration: 0.6, delay: 1.05 }}
           className="mt-16 flex flex-wrap items-baseline gap-x-10 gap-y-3 border-t border-white/10 pt-6"
         >
-          <span className="eyebrow">Built for</span>
+          <span className="font-mono text-[11px] tracking-[0.18em] text-ink-2">Built for</span>
           <span className="font-mono text-[13px] text-ink-1">SRE</span>
           <span className="font-mono text-[13px] text-ink-1">Platform</span>
           <span className="font-mono text-[13px] text-ink-1">Observability</span>
@@ -161,13 +161,13 @@ export function HeroSection({ onLaunch }: { onLaunch: () => void }) {
       >
         <div className="grid grid-cols-12 gap-6">
           <div className="col-span-12 lg:col-span-4">
-            <p className="eyebrow">Live sample run</p>
+            <p className="font-mono text-[11px] tracking-[0.18em] text-ink-2">Live sample run</p>
             <p className="mt-3 text-base text-ink-1">
               A deterministic verdict with constraint metrics, evidence spans,
-              and severity — generated locally and wired into the dashboard.
+              and severity, generated locally and wired into the dashboard.
             </p>
             <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 font-mono text-[12px] text-ink-2">
-              <span><span className="text-pass">PASS</span> · 3 constraints</span>
+              <span><span className="text-pass">PASS</span> / 3 constraints</span>
               <span>295 spans</span>
               <span>1.03s recovery</span>
             </div>

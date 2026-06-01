@@ -66,7 +66,7 @@ export function EmptyRunState({ title, subtitle }: { title: string; subtitle: st
       <Warning size={48} weight="duotone" className="mb-4 text-zinc-500" />
       <h3 className="text-xl font-semibold text-white">{title}</h3>
       <p className="mt-2 text-sm text-zinc-400">{subtitle}</p>
-      <p className="mt-2 text-xs text-zinc-500">Drop your verdict + stats or click samples below. Cmd/Ctrl + K for actions.</p>
+      <p className="mt-2 text-sm text-zinc-400">Drop your verdict + stats or click samples below. Cmd/Ctrl + K for actions.</p>
     </div>
   );
 }

@@ -54,14 +54,14 @@ export function TraceTimeline({ run }: { run: RunBundle | null }) {
   if (rtcb.metrics.max_recovery_ms_seen && rtcb.metrics.max_recovery_ms_seen > 0) {
     const seen = Number(rtcb.metrics.max_recovery_ms_seen);
     const threshold = Number(rtcb.metrics.max_recovery_ms);
-    events.push({ time: 'T+3', label: 'Recovery Attempt', detail: `Observed ${seen}ms · ceiling ${threshold}ms`, severity: seen > threshold ? 'critical' : 'info' });
+    events.push({ time: 'T+3', label: 'Recovery Attempt', detail: `Observed ${seen}ms / ceiling ${threshold}ms`, severity: seen > threshold ? 'critical' : 'info' });
   }
   if (brc.metrics.containment_latency_ms && brc.metrics.containment_latency_ms > 0) {
-    events.push({ time: 'T+4', label: 'Containment Boundary', detail: `Latency ${brc.metrics.containment_latency_ms}ms · within bound`, severity: 'info' });
+    events.push({ time: 'T+4', label: 'Containment Boundary', detail: `Latency ${brc.metrics.containment_latency_ms}ms, within bound`, severity: 'info' });
   }
 
   if (events.length === 0) {
-    events.push({ time: '—', label: 'No significant events', detail: 'All constraints passed without notable timeline events.', severity: 'info' });
+    events.push({ time: '-', label: 'No significant events', detail: 'All constraints passed without notable timeline events.', severity: 'info' });
   }
 
   return (

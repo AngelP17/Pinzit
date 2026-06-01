@@ -13,14 +13,14 @@ const evidenceFrames = [
   {
     label: 'Recovery',
     span: 'trace.span.system.recovery',
-    metric: 'observed: 1030ms · ceiling 30000ms',
+    metric: 'observed: 1030ms / ceiling 30000ms',
     note: 'Stability check satisfied within bounded recovery envelope.',
     seed: 'pinzit-evidence-recovery',
   },
   {
     label: 'Containment',
     span: 'trace.span.fault.isolation',
-    metric: 'hops: 2 · max 2',
+    metric: 'hops: 2 / max 2',
     note: 'Failure stayed inside isolation boundary. Bulkhead intact.',
     seed: 'pinzit-evidence-containment',
   },
@@ -42,13 +42,13 @@ export function ShowcaseSection({ onLaunch }: { onLaunch: () => void }) {
       <div className="grid grid-cols-12 gap-x-10 gap-y-10">
         {/* Pinned left column */}
         <div className="col-span-12 md:col-span-5 md:sticky md:top-32 md:self-start">
-          <span className="eyebrow">Evidence in motion</span>
+          <span className="font-mono text-[11px] tracking-[0.18em] text-ink-2">Evidence</span>
           <h2 className="display display-lg mt-4 text-white">
             Every verdict points back to a span you can read.
           </h2>
           <p className="lede mt-6">
             Pinzit doesn't summarize. It cites. Each constraint result is anchored
-            to a specific evidence span in the original trace — with the metric,
+            to a specific evidence span in the original trace, with the metric,
             the threshold, and the recommendation rendered side by side.
           </p>
 
@@ -86,7 +86,7 @@ export function ShowcaseSection({ onLaunch }: { onLaunch: () => void }) {
               >
                 <div className="flex items-baseline justify-between border-b border-white/10 px-5 py-3">
                   <span className="font-mono text-[11px] tracking-[0.18em] text-ink-2">
-                    EVIDENCE / {String(idx + 1).padStart(2, '0')}
+                    {frame.label}
                   </span>
                   <span className="font-mono text-[11px] text-pass">PASS</span>
                 </div>
@@ -99,12 +99,9 @@ export function ShowcaseSection({ onLaunch }: { onLaunch: () => void }) {
                 >
                   <p className="absolute bottom-3 left-5 font-mono text-[12px] text-white/85">{frame.span}</p>
                 </div>
-                <figcaption className="grid grid-cols-12 gap-4 px-5 py-5">
-                  <div className="col-span-4">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-2">{frame.label}</p>
-                    <p className="mt-1 font-mono text-[12.5px] text-white">{frame.metric}</p>
-                  </div>
-                  <p className="col-span-8 text-[14px] leading-relaxed text-ink-1">{frame.note}</p>
+                <figcaption className="px-5 py-5">
+                  <p className="font-mono text-[12.5px] text-white">{frame.metric}</p>
+                  <p className="mt-2 text-[14px] leading-relaxed text-ink-1">{frame.note}</p>
                 </figcaption>
               </motion.figure>
             ))}

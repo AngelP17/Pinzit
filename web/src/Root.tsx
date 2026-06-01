@@ -26,7 +26,7 @@ export function Root() {
 
   return (
     <>
-      <Suspense fallback={<div className="min-h-screen bg-[#050505]" />}>
+      <Suspense fallback={<div className="min-h-[100dvh] bg-[#050505]" />}>
         {view === 'landing' ? (
           <LandingPage onLaunch={handleLaunch} />
         ) : (

@@ -7,9 +7,9 @@ export function DiffBanner({ base, next }: { base: RunBundle; next: RunBundle })
   ids.forEach((id) => {
     const prev = base.verdict.constraints[id].verdict;
     const curr = next.verdict.constraints[id].verdict;
-    if (prev === 'PASS' && curr === 'FAIL') regressions += 1;
+    if (prev === 'PASS' && curr === 'FAIL')     regressions += 1;
     if (prev === 'FAIL' && curr === 'PASS') improvements += 1;
   });
 
-  return <div className="panel mb-4 border-fail/30 p-4 text-sm">{regressions} regressions — {improvements} improvements</div>;
+  return <div className="panel mb-4 border-fail/30 p-4 text-sm">{regressions} regressions, {improvements} improvements</div>;
 }

@@ -5,7 +5,7 @@ export function EmptyState({ title, subtitle }: { title: string; subtitle: strin
       <h3 className="mt-3 text-xl font-medium tracking-tight text-white">{title}</h3>
       <p className="mt-2 max-w-md text-sm text-ink-1">{subtitle}</p>
       <p className="mt-4 font-mono text-[11px] tracking-[0.16em] text-ink-2">
-        Cmd / Ctrl + K · open command palette
+        Cmd / Ctrl + K: open command palette
       </p>
     </div>
   );

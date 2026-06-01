@@ -14,10 +14,10 @@ export function SealedSection() {
             Telemetry tells you <span className="text-ink-2">what happened.</span>
             Runbooks tell you <span className="text-ink-2">what to do.</span>
             <span className="ml-1 text-white">Pinzit tells you whether the system behaved correctly</span>
-            <span className="text-signal">— and why it didn't.</span>
+            <span className="text-signal">, and why it didn't.</span>
           </p>
           <figcaption className="mt-8 font-mono text-[12px] tracking-[0.18em] text-ink-2">
-            — operating premise · v0.1.0
+            operating premise
           </figcaption>
         </blockquote>
       </figure>

@@ -12,7 +12,7 @@ export function FileChip({
   onRemove?: () => void;
 }) {
   const title = fileMeta
-    ? `${Math.round(fileMeta.size / 1024)} KB — ${fileMeta.modifiedAt}`
+    ? `${Math.round(fileMeta.size / 1024)} KB / ${fileMeta.modifiedAt}`
     : 'No file loaded';
   return (
     <div

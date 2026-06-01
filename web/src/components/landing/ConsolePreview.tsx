@@ -60,13 +60,13 @@ export function ConsolePreview() {
             className="space-y-2 font-mono text-[12.5px] leading-relaxed text-ink-1"
           >
             <Line>$ pinzit --trace ./trace.json --config ./pinzit.toml</Line>
-            <Line muted>loaded {packet.spanCount} spans · profile={packet.profile}</Line>
-            <Line muted>signal_loss_events={packet.signalLossEvents} · evidence_spans={packet.evidenceCount}</Line>
+            <Line muted>loaded {packet.spanCount} spans / profile={packet.profile}</Line>
+            <Line muted>signal_loss_events={packet.signalLossEvents} / evidence_spans={packet.evidenceCount}</Line>
             {packet.lines.map((line) => (
               <Line key={line}>{line}</Line>
             ))}
             <div className="mt-3 border-t border-white/10 pt-3">
-              <Line accent>verdict={packet.verdict} · exit={packet.verdict === 'PASS' ? 0 : 1}</Line>
+              <Line accent>verdict={packet.verdict} / exit={packet.verdict === 'PASS' ? 0 : 1}</Line>
             </div>
           </motion.div>
         </AnimatePresence>

@@ -31,7 +31,7 @@ export function Header({ onBack }: { onBack?: () => void }) {
             </button>
           ) : null}
           <div>
-            <p className="font-mono text-[11px] tracking-[0.22em] text-ink-2">PINZIT · CONTROL ROOM</p>
+            <p className="font-mono text-[11px] tracking-[0.22em] text-ink-2">PINZIT / CONTROL ROOM</p>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight text-white">
               Reliability verdict workspace
             </h1>

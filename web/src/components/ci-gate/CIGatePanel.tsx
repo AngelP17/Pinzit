@@ -78,7 +78,7 @@ jobs:
         <div>
           <span className="font-mono text-[11px] tracking-[0.22em] text-ink-2">CI GATE</span>
           <h2 className="mt-1.5 text-2xl font-semibold tracking-tight text-white">
-            Decision surface — exit code, PR summary, workflow
+            Decision surface: exit code, PR summary, workflow
           </h2>
           <p className="mt-1 text-sm text-ink-1">Copyable artifacts ready for your delivery pipeline.</p>
         </div>
@@ -90,9 +90,9 @@ jobs:
           <span className="font-mono text-[11px] tracking-[0.22em] text-ink-2">EXIT CODE</span>
           <p className={`display display-mega mt-3 ${tone}`}>{exitCode}</p>
           <p className={`mt-3 text-sm ${tone}`}>
-            {exitCode === 0 && 'PASS — All constraints satisfied'}
-            {exitCode === 1 && 'FAIL — One or more constraints violated'}
-            {exitCode === 2 && 'ERROR — Config or parse issue'}
+            {exitCode === 0 && 'PASS, all constraints satisfied'}
+            {exitCode === 1 && 'FAIL, one or more constraints violated'}
+            {exitCode === 2 && 'ERROR, config or parse issue'}
           </p>
           <p className="mt-6 border-t border-white/10 pt-4 text-[12.5px] text-ink-1">
             Pinzit emits exit codes suitable for use as a CI gate. No backend, no orchestration.

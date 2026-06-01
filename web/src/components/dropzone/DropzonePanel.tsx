@@ -76,7 +76,7 @@ export function DropzonePanel() {
   };
 
   const runSummary = run
-    ? `${run.fileNames?.verdict ?? 'sample'} · ${run.csvRows.length} metric rows`
+    ? `${run.fileNames?.verdict ?? 'sample'}, ${run.csvRows.length} metric rows`
     : 'No run loaded';
 
   return (
@@ -129,7 +129,7 @@ export function DropzonePanel() {
               >
                 <p className="text-[13px] text-white">Drop pinzit_verdict.json + pinzit_stats.csv</p>
                 <p className="mt-1 inline-flex items-center gap-1.5 text-[11px] text-ink-2">
-                  <ShieldCheck size={12} weight="bold" /> Parsed locally — never uploaded.
+                  <ShieldCheck size={12} weight="bold" /> Parsed locally, never uploaded.
                 </p>
               </button>
 

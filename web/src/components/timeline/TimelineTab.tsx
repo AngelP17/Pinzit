@@ -22,7 +22,7 @@ export function TimelineTab({ run }: { run: RunBundle | null }) {
             Incident reconstruction & recovery envelope
           </h2>
           <p className="mt-1 text-sm text-ink-1">
-            Origin, propagation, containment and recovery — rebuilt from the parsed trace.
+            Origin, propagation, containment and recovery, rebuilt from the parsed trace.
           </p>
         </div>
       </div>

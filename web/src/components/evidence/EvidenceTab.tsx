@@ -11,9 +11,9 @@ const labels: Record<ConstraintId, string> = {
 
 function thresholdAndObserved(id: ConstraintId, result: ConstraintResult): { thresholdLabel?: string; observedLabel?: string } {
   const m = result.metrics as Record<string, unknown>;
-  if (id === 'slfs_001') return { thresholdLabel: `safe_state_deadline_ms: ${m.safe_state_deadline_ms ?? '—'}`, observedLabel: `unsafe_after_loss_count: ${m.unsafe_after_loss_count ?? 0}` };
-  if (id === 'rtcb_002') return { thresholdLabel: `max_recovery_ms: ${m.max_recovery_ms ?? '—'}`, observedLabel: `max_recovery_ms_seen: ${m.max_recovery_ms_seen ?? 0}` };
-  if (id === 'brc_003')  return { thresholdLabel: `containment_timeout_ms: ${m.containment_timeout_ms ?? '—'}`, observedLabel: `containment_latency_ms: ${m.containment_latency_ms ?? 0}` };
+  if (id === 'slfs_001') return { thresholdLabel: `safe_state_deadline_ms: ${m.safe_state_deadline_ms ?? '-'}`, observedLabel: `unsafe_after_loss_count: ${m.unsafe_after_loss_count ?? 0}` };
+  if (id === 'rtcb_002') return { thresholdLabel: `max_recovery_ms: ${m.max_recovery_ms ?? '-'}`, observedLabel: `max_recovery_ms_seen: ${m.max_recovery_ms_seen ?? 0}` };
+  if (id === 'brc_003')  return { thresholdLabel: `containment_timeout_ms: ${m.containment_timeout_ms ?? '-'}`, observedLabel: `containment_latency_ms: ${m.containment_latency_ms ?? 0}` };
   return {};
 }
 
@@ -39,11 +39,11 @@ function EvidenceCard({ id, result, onClick }: { id: ConstraintId; result: Const
       <dl className="mt-5 grid grid-cols-2 gap-px bg-white/5">
         <div className="bg-paper-1 px-3 py-2.5">
           <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-2">Threshold</dt>
-          <dd className="mt-1 font-mono text-[12px] text-ink-1 break-all">{thresholdLabel ?? '—'}</dd>
+          <dd className="mt-1 font-mono text-[12px] text-ink-1 break-all">{thresholdLabel ?? '-'}</dd>
         </div>
         <div className="bg-paper-1 px-3 py-2.5">
           <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-2">Observed</dt>
-          <dd className="mt-1 font-mono text-[12px] text-ink-1 break-all">{observedLabel ?? '—'}</dd>
+          <dd className="mt-1 font-mono text-[12px] text-ink-1 break-all">{observedLabel ?? '-'}</dd>
         </div>
       </dl>
 

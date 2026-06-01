@@ -15,22 +15,15 @@ export function FeaturesGrid() {
 
   return (
     <section ref={ref} id="architecture" className="mx-auto max-w-6xl px-6 py-32 md:px-10 md:py-40">
-      <div className="mb-14 grid grid-cols-12 gap-x-10 gap-y-6">
-        <div className="col-span-12 md:col-span-7">
-          <span className="eyebrow">What lives inside</span>
-          <h2 className="display display-lg mt-4 text-white">
-            A control room built around evidence — not opinion.
-          </h2>
-        </div>
-        <div className="col-span-12 md:col-span-5 md:pt-2">
-          <p className="lede">
-            Every cell below maps to a real artifact in the verdict bundle.
-            Hover to inspect the source-of-truth column for that surface.
-          </p>
-        </div>
-      </div>
+      <h2 className="display display-lg max-w-3xl text-white">
+        A control room built around evidence, not opinion.
+      </h2>
+      <p className="lede mt-6">
+        Every cell below maps to a real artifact in the verdict bundle.
+        Hover to inspect the source-of-truth column for that surface.
+      </p>
 
-      <div className="bento">
+      <div className="bento mt-14">
         {/* A — Verdict pulse (3×2) */}
         <article className="bento-cell col-span-6 row-span-2 md:col-span-3">
           <div className="flex h-full flex-col justify-between">
@@ -89,7 +82,7 @@ export function FeaturesGrid() {
               />
               <span className="absolute right-0 -top-5 font-mono text-[10px] text-ink-2">30s ceiling</span>
             </div>
-            <p className="mt-4 text-[12px] text-ink-1">RTCB-002 — within bound.</p>
+            <p className="mt-4 text-[12px] text-ink-1">RTCB-002, within bound.</p>
           </div>
         </article>
 
@@ -101,7 +94,7 @@ export function FeaturesGrid() {
           <div className="relative z-10 flex h-full flex-col justify-end">
             <span className="eyebrow-signal">Causal graph</span>
             <p className="mt-3 text-2xl font-medium text-white tracking-tight">
-              Reconstruct the chain of failure — span by span.
+              Reconstruct the chain of failure, span by span.
             </p>
             <p className="mt-2 max-w-md text-[13px] text-ink-1">
               The control room rebuilds the parent-child topology so a reviewer
@@ -140,13 +133,13 @@ export function FeaturesGrid() {
           <div className="grid grid-cols-12 items-center gap-6">
             <div className="col-span-12 md:col-span-4">
               <span className="eyebrow">Decision surface</span>
-              <p className="mt-2 text-base text-white">CI gate · PR summary · exit code</p>
+              <p className="mt-2 text-base text-white">CI gate, PR summary, exit code</p>
             </div>
             <div className="col-span-12 md:col-span-8">
               <p className="text-[14px] leading-relaxed text-ink-1">
                 Every verdict ships with a copyable PR summary block, a GitHub
                 Actions snippet and a clean exit code. Pinzit's job ends where
-                your delivery pipeline starts — no orchestration, no callbacks.
+                 your delivery pipeline starts. No orchestration, no callbacks.
               </p>
             </div>
           </div>
